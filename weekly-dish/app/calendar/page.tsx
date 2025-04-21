@@ -1,5 +1,11 @@
 import React from "react";
 
+import MealCard from "@/components/mealCard";
+interface MealCardProps {
+  name: string;
+  type: string;
+  timing: string;
+}
 const days = ["日", "月", "火", "水", "木", "金", "土"];
 // 過去4週間分の日付を生成する関数
 function getLast4Weeks(): Date[] {
@@ -20,6 +26,17 @@ export default function Calendar() {
   const last4Weeks = getLast4Weeks();
   const today = new Date();
   today.setHours(0, 0, 0, 0); // 時間をリセットして比較用に準備
+
+  const lunch: MealCardProps = {
+    name: "鶏の照焼",
+    type: "main",
+    timing: "lunch",
+  };
+  const dinner: MealCardProps = {
+    name: "ほうれん草のおひたし",
+    type: "sub",
+    timing: "dinner",
+  };
   return (
     <>
       <div>
@@ -39,10 +56,8 @@ export default function Calendar() {
                   <h2 className="font-bold text-center">
                     {`${date.getMonth() + 1}/${date.getDate()} (${days[date.getDay()]})`}
                   </h2>
-                  <div className="mt-2 text-sm">
-                    <p>昼：-</p>
-                    <p>夜：-</p>
-                  </div>
+                  <MealCard {...lunch} />
+                  <MealCard {...dinner} />
                 </div>
               );
             })}
