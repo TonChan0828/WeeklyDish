@@ -1,110 +1,72 @@
+"use client";
 import React from "react";
+import { useState } from "react";
 
 import MealCard from "@/components/mealCard";
 import { createClient } from "@/utils/supabase/server";
-import { cookies } from "next/headers";
-import { title } from "process";
+import { format, addDays } from "date-fns";
+import { ja } from "date-fns/locale";
 
-interface MealWithRecipe {
-  date: string;
-  time_slot: "lunch" | "dinner";
-  recipe: {
-    title: string;
-    type: "main" | "side";
+export default function Calendar() {
+  const [calendar, setCalendar] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const generateMeals = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("/api/generate-meals", { method: "POST" });
+      const data = await response.json();
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      setCalendar(data.calendar);
+    } catch (error) {
+      console.error("献立生成エラー", error);
+      alert("献立の生成に失敗しました。");
+    } finally {
+      setLoading(false);
+    }
   };
-}
-
-const days = ["日", "月", "火", "水", "木", "金", "土"];
-// 過去4週間分の日付を生成する関数
-function getLast4Weeks(): Date[] {
-  const today = new Date();
-  const dayOfWeek = today.getDay();
-  const lastSunday = new Date(today);
-  lastSunday.setDate(today.getDate() - dayOfWeek); // 今週の日曜日の日付を取得
-  // 今日から過去4週間分の日付を生成
-  const dates = Array.from({ length: 28 }, (_, i) => {
-    const date = new Date();
-    date.setDate(lastSunday.getDate() - i + 6);
-    return date;
-  });
-  return dates.reverse();
-}
-
-export default async function Calendar() {
-  const last4Weeks = getLast4Weeks();
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // 時間をリセットして比較用に準備
-
-  const supabaseURl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  const supabase = await createClient();
-  const { data: recipes } = await supabase
-    .from("recipes")
-    .select("id,title,type");
-  const { data: meals } = await supabase
-    .from("meal_entries")
-    .select("date,time_slot,recipe(*)");
-  const mealsByDate: Record<
-    string,
-    { lunch: MealWithRecipe[]; dinner: MealWithRecipe[] }
-  > = {};
-  console.log("Meals with Recipes:", meals);
-
-  meals?.forEach((meal) => {
-    const date = meal.date;
-    const time = meal.time_slot;
-    if (!mealsByDate[date]) {
-      mealsByDate[date] = { lunch: [], dinner: [] };
-    }
-    if (!mealsByDate[date][time]) {
-      mealsByDate[date][time] = [];
-    }
-    mealsByDate[date][time].push(meal);
-  });
-
-  const days = [
-    "2025-04-21",
-    "2025-04-22",
-    "2025-04-23",
-    "2025-04-24",
-    "2025-04-25",
-    "2025-04-26",
-    "2025-04-27",
-  ];
 
   return (
-    <>
-      <div>
-        <div>
-          <h1 className="text-2xl font-bold mb-4">1週間の献立カレンダー</h1>
-          <div className="grid grid-cols-7 gap-2">
-            {days.map((day) => (
-              <div key={day} className="bg-white p-3 shadow rounded">
-                <h2 className="font-bold text-sm text-center">{day}</h2>
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">週間献立カレンダー</h1>
 
-                <div className="mt-2">
-                  <p className="text-xs font-bold">昼：</p>
-                  <div className="space-y-1">
-                    {mealsByDate[day]?.lunch?.map((meal, i) => (
-                      <MealCard key={i} {...meal} />
-                    )) ?? <p className="text-sm text-gray-400">-</p>}
-                  </div>
-                </div>
+      <button
+        onClick={generateMeals}
+        disabled={loading}
+        className="bg-blue-500 text-white px-4 py-2 rounded mb-4 hover:bg-blue-600 disabled:bg-gray-400"
+      >
+        {loading ? "生成中..." : "献立を生成"}
+      </button>
 
-                <div className="mt-2">
-                  <p className="text-xs font-bold">夜：</p>
-                  <div className="space-y-1">
-                    {mealsByDate[day]?.dinner?.map((meal, i) => (
-                      <MealCard key={i} {...meal} />
-                    )) ?? <p className="text-sm text-gray-400">-</p>}
-                  </div>
-                </div>
+      {calendar && (
+        <div className="grid gap-4">
+          {Object.entries(calendar).map(([date, meals]) => (
+            <div key={date} className="border p-4 rounded">
+              <h2 className="font-bold">
+                {format(new Date(date), "M月d日(E)", { locale: ja })}
+              </h2>
+              <div className="mt-2">
+                <h3 className="font-semibold">昼食:</h3>
+                <ul className="list-disc ml-4">
+                  {meals.lunch.map((recipe, i) => (
+                    <li key={`lunch-${i}`}>{recipe.title}</li>
+                  ))}
+                </ul>
               </div>
-            ))}
-          </div>
+              <div className="mt-2">
+                <h3 className="font-semibold">夕食:</h3>
+                <ul className="list-disc ml-4">
+                  {meals.dinner.map((recipe, i) => (
+                    <li key={`dinner-${i}`}>{recipe.title}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          ))}
         </div>
-      </div>
-    </>
+      )}
+    </div>
   );
 }
