@@ -10,93 +10,67 @@ type Recipe = {
     category: string;
 };
 
-type MealCalendar = {
-    [date: string]: {
-        lunch: Recipe[];
-        dinner: Recipe[];
-    };
-};
 
+// 指定数だけランダムに配列から抽出する関数
+function getRandomItems<T>(arr: T[], num: number): T[] {
+  if (num <= 0) return [];
+  const shuffled = [...arr].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, num);
+}
 
-export async function POST () {
+export async function POST (request: Request) {
     try {
-        const supabase = await createClient();
-        const today = new Date();
+       // 1. リクエストbodyから数値を取得
+    const { lunchMain, lunchSide, dinnerMain, dinnerSide } = await request.json();
 
-        // 1週間分の日付を生成
-        const dates = Array.from({ length: 7 }).map((_, i) =>
-            format(addDays(today, i), "yyyy-MM-dd")
-        );
+    const supabase = await createClient();
+    const today = new Date();
+    const dates = Array.from({ length: 7 }).map((_, i) =>
+      format(addDays(today, i), "yyyy-MM-dd")
+    );
 
-        // 1か月前の日付を計算
-        const oneMonthAgo = format(addDays(today, -28), "yyyy-MM-dd");
+    // 2. レシピ全件取得
+    const { data: recipes, error } = await supabase
+      .from("recipes")
+      .select("*");
 
-        // 直近１ヶ月で使用したレシピIDを取得
-        const { data: recentlyUsedRecipes } = await supabase.from("meal_entries").select("recipe").gte("date", oneMonthAgo);
-        // console.log("debug recentlyUsedRecipes:",recentlyUsedRecipes);
+    if (error || !recipes) {
+      return NextResponse.json({ error: "レシピ取得失敗" }, { status: 500 });
+    }
 
-        const recentIds = recentlyUsedRecipes?.map((entry) => entry.recipe) || [];
-        // console.log("debug recentIds:",recentIds);
-
-        // 利用可能なレシピを取得
-        const { data: recipes, error } = await supabase
-            .from("recipes")
-            .select("*")
-            .not("id", "in", `(${recentIds.join(",")})`);
-        // console.log("debug recipes:",recipes);
-        if (error || !recipes) {
-            return NextResponse.json({ error: "レシピの取得に失敗しました" }, { status: 500 });
-        }
+    // 3. 主菜・副菜でレシピを分類
+    const mainRecipes = recipes.filter(r => r.type === "main");
+        const sideRecipes = recipes.filter(r => r.type === "side");
         
-        const calendar: MealCalendar = {};
-        
-        // 各日付に対して献立を生成
-        for (const date of dates) {
-            calendar[date] = { "lunch": [], "dinner": [] };
-            // console.log("debug date:", date);
-            // 昼食と夕食それぞれに対して処理
-            for (const slot of ["lunch", "dinner"] as const) {
-                const availableRecipes = recipes.filter(recipe => { return recipe.time_slot?.includes(slot) && !recentIds.includes(recipe.id); });
+    // すでに使ったレシピIDを記録
+    let usedMainIds: string[] = [];
+    let usedSideIds: string[] = [];
 
-                if (availableRecipes.length === 0) {
-                    continue;
-                }
-                
-                // ランダムにレシピを選択
-                const selectedRecipe = availableRecipes[Math.floor(Math.random() * availableRecipes.length)];
-                // console.log("debug selectedRecipe:", selectedRecipe);
-                // duration_daysの日数分、レシピを割り当て
-                for (let offset = 0; offset < (selectedRecipe.duration_days); offset++) {
-                    const targetDate = format(addDays(new Date(date), offset), "yyyy-MM-dd");
-                    if (calendar[targetDate]) {
-                        calendar[targetDate][slot].push(selectedRecipe);
-                    }
-                }
-                // 使用したレシピをrecentIdsに追加
-                recentIds.push(selectedRecipe.id);
+    // 4. 1週間分のカレンダーを作成
+    const calendar: Record<string, { lunch: any[]; dinner: any[] }> = {};
+    // その日使えるレシピから、すでに使ったものを除外
+      const availableMain = mainRecipes.filter(r => !usedMainIds.includes(r.id));
+      const availableSide = sideRecipes.filter(r => !usedSideIds.includes(r.id));
 
-                // 献立履歴に記録
-                await supabase.from("meal_entries").insert(
-                    {
-                        recipe: selectedRecipe.id,
-                        date: date,
-                        time_slot: slot
-                    });
-            }
-        }
-        for (const data in calendar) {
-            console.log("debug data:", data);
-            for(const slot in calendar[data]){
-                console.log("debug slot:", slot);
-                console.log("debug calendar[data][slot]:", calendar[data][slot]);
-            }
-        }
-        return NextResponse.json({ calendar });
-    } catch (error) {
-        console.error("献立生成エラー:", error);
-        return NextResponse.json(
-            { error: "献立の生成に失敗しました" },
-            { status: 500 }
-        );
+    for (const date of dates) {
+      // 主菜・副菜をランダムに抽出i
+      const lunchMains = getRandomItems(availableMain, lunchMain);
+      const lunchSides = getRandomItems(availableSide, lunchSide);
+      const dinnerMains = getRandomItems(availableMain, dinnerMain);
+      const dinnerSides = getRandomItems(availableSide, dinnerSide);
+
+      calendar[date] = {
+        lunch: [...lunchMains, ...lunchSides],
+        dinner: [...dinnerMains, ...dinnerSides],
+      };
+    }
+    console.log(calendar);
+    return NextResponse.json({ calendar });
+  } catch (error) {
+    console.error("献立生成エラー:", error);
+    return NextResponse.json(
+      { error: "献立の生成に失敗しました" },
+      { status: 500 }
+    );
     }
 }
