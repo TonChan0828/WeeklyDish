@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 import MealCard from "@/components/mealCard";
 import { createClient } from "@/utils/supabase/server";
@@ -15,6 +15,24 @@ export default function Calendar() {
   const [dinnerSide, setDinnerSide] = useState(3);
   const [calendar, setCalendar] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const mainRecipes = useMemo(() => {
+    if (!calendar) return [];
+    const all = Object.values(calendar)
+      .flatMap((day) => [...day.lunch, ...day.dinner])
+      .filter((recipe) => recipe.type === "main");
+    // 重複除去（idでユニーク化）
+    return Array.from(new Map(all.map((r) => [r.id, r])).values());
+  }, [calendar]);
+
+  const sideRecipes = useMemo(() => {
+    if (!calendar) return [];
+    const all = Object.values(calendar)
+      .flatMap((day) => [...day.lunch, ...day.dinner])
+      .filter((recipe) => recipe.type === "side");
+    // 重複除去（idでユニーク化）
+    return Array.from(new Map(all.map((r) => [r.id, r])).values());
+  }, [calendar]);
 
   // 献立生成リクエスト
   const handleGenerateMeals = async () => {
@@ -34,6 +52,18 @@ export default function Calendar() {
     setLoading(false);
   };
 
+  const handleChangeRecipe = (date, slot, index, newRecipeId) => {
+    // 新しいレシピをmainRecipes/sideRecipesから探す
+    const allRecipes = [...mainRecipes, ...sideRecipes];
+    const newRecipe = allRecipes.find((r) => r.id === newRecipeId);
+    setCalendar((prev) => ({
+      ...prev,
+      [date]: {
+        ...prev[date],
+        [slot]: prev[date][slot].map((r, i) => (i === index ? newRecipe : r)),
+      },
+    }));
+  };
 
   return (
     <div className="container mx-auto p-4">
@@ -101,13 +131,30 @@ export default function Calendar() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
           {Object.entries(calendar).map(([date, meals]) => (
             <div key={date} className="border p-4 rounded shadow bg-white">
-              <h2 className="font-bold mb-2 text-lg">{date}</h2>
+              <h2 className="font-bold mb-2 text-lg">
+                {format(new Date(date), "M月d日(E)", { locale: ja })}
+              </h2>
               <div>
                 <h3 className="font-semibold text-blue-600">昼食</h3>
                 <ul className="list-disc ml-5">
                   {meals.lunch.map((recipe, i) => (
-                    <li key={`lunch-${i}`} className="text-gray-700">
-                      {recipe.title}
+                    <li key={`lunch-${i}`} className="flex items-center gap-2">
+                      <select
+                        value={recipe.id}
+                        onChange={(e) =>
+                          handleChangeRecipe(date, "lunch", i, e.target.value)
+                        }
+                        className="border rounded px-2"
+                      >
+                        {(recipe.type === "main"
+                          ? mainRecipes
+                          : sideRecipes
+                        ).map((r) => (
+                          <option key={r.id} value={r.id}>
+                            {r.title}
+                          </option>
+                        ))}
+                      </select>
                     </li>
                   ))}
                 </ul>
@@ -116,8 +163,23 @@ export default function Calendar() {
                 <h3 className="font-semibold text-green-600">夕食</h3>
                 <ul className="list-disc ml-5">
                   {meals.dinner.map((recipe, i) => (
-                    <li key={`dinner-${i}`} className="text-gray-700">
-                      {recipe.title}
+                    <li key={`dinner-${i}`} className="flex items-center gap-2">
+                      <select
+                        value={recipe.id}
+                        onChange={(e) =>
+                          handleChangeRecipe(date, "dinner", i, e.target.value)
+                        }
+                        className="border rounded px-2"
+                      >
+                        {(recipe.type === "main"
+                          ? mainRecipes
+                          : sideRecipes
+                        ).map((r) => (
+                          <option key={r.id} value={r.id}>
+                            {r.title}
+                          </option>
+                        ))}
+                      </select>
                     </li>
                   ))}
                 </ul>
