@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { useState, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 import MealCard from "@/components/mealCard";
 import { createClient } from "@/utils/supabase/server";
@@ -8,6 +9,7 @@ import { format, addDays } from "date-fns";
 import { ja } from "date-fns/locale";
 
 export default function Calendar() {
+  const router = useRouter();
   // 主菜・副菜の数を状態管理
   const [lunchMain, setLunchMain] = useState(1);
   const [lunchSide, setLunchSide] = useState(2);
@@ -110,7 +112,12 @@ export default function Calendar() {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">週間献立カレンダー</h1>
+      <h1
+        className="text-2xl font-bold mb-4 cursor-pointer hover:text-blue-600 transition"
+        onClick={() => router.push("/calendar")}
+      >
+        週間献立カレンダー
+      </h1>
       <div className="mb-4 p-4 border rounded">
         <h2 className="font-semibold mb-2">主菜・副菜の数を指定</h2>
         <div className="flex gap-8">
@@ -169,15 +176,12 @@ export default function Calendar() {
           {loading ? "生成中..." : "献立を生成"}
         </button>
       </div>
-
-      {/* 1週間分の新しい献立があればそれを表示、なければ4週間分を表示 */}
-      {calendar ? (
-        renderCalendar(calendar)
-      ) : calendar4weeks ? (
+      {calendar4weeks ? (
         renderCalendar(calendar4weeks)
       ) : (
         <div>読み込み中...</div>
       )}
+      {calendar ? renderCalendar(calendar) : null}
     </div>
   );
 }
