@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 
 import MealCard from "@/components/mealCard";
 import { createClient } from "@/utils/supabase/server";
@@ -13,8 +13,18 @@ export default function Calendar() {
   const [lunchSide, setLunchSide] = useState(2);
   const [dinnerMain, setDinnerMain] = useState(1);
   const [dinnerSide, setDinnerSide] = useState(3);
+  // 1週間分の新しい献立
   const [calendar, setCalendar] = useState(null);
+  // 4週間分の献立
+  const [calendar4weeks, setCalendar4weeks] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // 初回レンダリング時に4週間分の献立を取得
+  useEffect(() => {
+    fetch("/api/get-4weeks-meals")
+      .then((res) => res.json())
+      .then((data) => setCalendar4weeks(data.calendar));
+  }, []);
 
   const mainRecipes = useMemo(() => {
     if (!calendar) return [];
@@ -51,6 +61,39 @@ export default function Calendar() {
     setCalendar(data.calendar);
     setLoading(false);
   };
+
+  // カレンダー表示UI
+  const renderCalendar = (calendarData) => (
+    <div className="grid grid-cols-1 md:grid-cols-7 gap-4 mt-8">
+      {Object.entries(calendarData).map(([date, meals]) => (
+        <div key={date} className="border p-4 rounded shadow bg-white">
+          <h2 className="font-bold mb-2 text-lg">
+            {format(new Date(date), "M月d日(E)", { locale: ja })}
+          </h2>
+          <div>
+            <h3 className="font-semibold text-blue-600">昼食</h3>
+            <ul className="list-disc ml-5">
+              {meals.lunch.map((recipe, i) => (
+                <li key={`lunch-${i}`} className="text-gray-700">
+                  {recipe.title}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="mt-2">
+            <h3 className="font-semibold text-green-600">夕食</h3>
+            <ul className="list-disc ml-5">
+              {meals.dinner.map((recipe, i) => (
+                <li key={`dinner-${i}`} className="text-gray-700">
+                  {recipe.title}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 
   const handleChangeRecipe = (date, slot, index, newRecipeId) => {
     // 新しいレシピをmainRecipes/sideRecipesから探す
@@ -127,66 +170,13 @@ export default function Calendar() {
         </button>
       </div>
 
-      {calendar && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
-          {Object.entries(calendar).map(([date, meals]) => (
-            <div key={date} className="border p-4 rounded shadow bg-white">
-              <h2 className="font-bold mb-2 text-lg">
-                {format(new Date(date), "M月d日(E)", { locale: ja })}
-              </h2>
-              <div>
-                <h3 className="font-semibold text-blue-600">昼食</h3>
-                <ul className="list-disc ml-5">
-                  {meals.lunch.map((recipe, i) => (
-                    <li key={`lunch-${i}`} className="flex items-center gap-2">
-                      <select
-                        value={recipe.id}
-                        onChange={(e) =>
-                          handleChangeRecipe(date, "lunch", i, e.target.value)
-                        }
-                        className="border rounded px-2"
-                      >
-                        {(recipe.type === "main"
-                          ? mainRecipes
-                          : sideRecipes
-                        ).map((r) => (
-                          <option key={r.id} value={r.id}>
-                            {r.title}
-                          </option>
-                        ))}
-                      </select>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="mt-2">
-                <h3 className="font-semibold text-green-600">夕食</h3>
-                <ul className="list-disc ml-5">
-                  {meals.dinner.map((recipe, i) => (
-                    <li key={`dinner-${i}`} className="flex items-center gap-2">
-                      <select
-                        value={recipe.id}
-                        onChange={(e) =>
-                          handleChangeRecipe(date, "dinner", i, e.target.value)
-                        }
-                        className="border rounded px-2"
-                      >
-                        {(recipe.type === "main"
-                          ? mainRecipes
-                          : sideRecipes
-                        ).map((r) => (
-                          <option key={r.id} value={r.id}>
-                            {r.title}
-                          </option>
-                        ))}
-                      </select>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          ))}
-        </div>
+      {/* 1週間分の新しい献立があればそれを表示、なければ4週間分を表示 */}
+      {calendar ? (
+        renderCalendar(calendar)
+      ) : calendar4weeks ? (
+        renderCalendar(calendar4weeks)
+      ) : (
+        <div>読み込み中...</div>
       )}
     </div>
   );
