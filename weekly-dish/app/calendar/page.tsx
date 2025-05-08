@@ -65,7 +65,7 @@ export default function Calendar() {
   };
 
   // カレンダー表示UI
-  const renderCalendar = (calendarData) => (
+  const renderCalendar = (calendarData, isEditable = false) => (
     <div className="grid grid-cols-1 md:grid-cols-7 gap-4 mt-8">
       {Object.entries(calendarData).map(([date, meals]) => (
         <div key={date} className="border p-4 rounded shadow bg-white">
@@ -77,7 +77,25 @@ export default function Calendar() {
             <ul className="list-disc ml-5">
               {meals.lunch.map((recipe, i) => (
                 <li key={`lunch-${i}`} className="text-gray-700">
-                  {recipe.title}
+                  {isEditable ? (
+                    <select
+                      value={recipe.id}
+                      onChange={(e) =>
+                        handleChangeRecipe(date, "lunch", i, e.target.value)
+                      }
+                      className="border rounded px-2 w-full"
+                    >
+                      {(recipe.type === "main" ? mainRecipes : sideRecipes).map(
+                        (r) => (
+                          <option key={r.id} value={r.id}>
+                            {r.title}
+                          </option>
+                        )
+                      )}
+                    </select>
+                  ) : (
+                    recipe.title
+                  )}
                 </li>
               ))}
             </ul>
@@ -87,7 +105,25 @@ export default function Calendar() {
             <ul className="list-disc ml-5">
               {meals.dinner.map((recipe, i) => (
                 <li key={`dinner-${i}`} className="text-gray-700">
-                  {recipe.title}
+                  {isEditable ? (
+                    <select
+                      value={recipe.id}
+                      onChange={(e) =>
+                        handleChangeRecipe(date, "dinner", i, e.target.value)
+                      }
+                      className="border rounded px-2 w-full"
+                    >
+                      {(recipe.type === "main" ? mainRecipes : sideRecipes).map(
+                        (r) => (
+                          <option key={r.id} value={r.id}>
+                            {r.title}
+                          </option>
+                        )
+                      )}
+                    </select>
+                  ) : (
+                    recipe.title
+                  )}
                 </li>
               ))}
             </ul>
@@ -177,11 +213,11 @@ export default function Calendar() {
         </button>
       </div>
       {calendar4weeks ? (
-        renderCalendar(calendar4weeks)
+        renderCalendar(calendar4weeks, false) // 4週間分は編集不可
       ) : (
         <div>読み込み中...</div>
       )}
-      {calendar ? renderCalendar(calendar) : null}
+      {calendar ? renderCalendar(calendar, true) : null}
     </div>
   );
 }
