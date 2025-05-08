@@ -23,7 +23,7 @@ export default function Calendar() {
 
   // 初回レンダリング時に4週間分の献立を取得
   useEffect(() => {
-    fetch("/api/get-4weeks-meals")
+    fetch("/api/get-5weeks-meals")
       .then((res) => res.json())
       .then((data) => setCalendar4weeks(data.calendar));
   }, []);
@@ -146,6 +146,31 @@ export default function Calendar() {
     }));
   };
 
+  // 献立登録用の関数を追加
+  const handleSaveMeals = async () => {
+    if (!calendar) return;
+
+    try {
+      const res = await fetch("/api/save-meals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ calendar }),
+      });
+
+      if (!res.ok) throw new Error("登録に失敗しました");
+
+      alert("献立を登録しました！");
+      // 登録後は4週間分の献立を再取得
+      const updatedRes = await fetch("/api/get-5weeks-meals");
+      const updatedData = await updatedRes.json();
+      setCalendar4weeks(updatedData.calendar);
+      setCalendar(null); // 生成された献立をクリア
+    } catch (error) {
+      console.error("登録エラー:", error);
+      alert("献立の登録に失敗しました");
+    }
+  };
+
   return (
     <div className="container mx-auto p-4">
       <h1
@@ -218,6 +243,16 @@ export default function Calendar() {
         <div>読み込み中...</div>
       )}
       {calendar ? renderCalendar(calendar, true) : null}
+      {calendar && (
+        <div className="mt-4 flex justify-center">
+          <button
+            onClick={handleSaveMeals}
+            className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 transition"
+          >
+            この献立を登録する
+          </button>
+        </div>
+      )}
     </div>
   );
 }

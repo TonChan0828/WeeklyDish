@@ -5,7 +5,7 @@ import { addDays,subDays, format } from "date-fns";
 export async function GET() {
   const supabase = await createClient();
   const startDay = subDays(new Date(), 28);
-  const dates = Array.from({ length: 28 }).map((_, i) =>
+  const dates = Array.from({ length: 35 }).map((_, i) =>
     format(addDays(startDay, i), "yyyy-MM-dd")
   );
 
