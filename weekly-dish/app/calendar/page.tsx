@@ -1,12 +1,9 @@
+// app/calendar/page.tsx
 "use client";
 import React from "react";
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
-
-import MealCard from "@/components/mealCard";
-import { createClient } from "@/utils/supabase/server";
-import { format, addDays } from "date-fns";
-import { ja } from "date-fns/locale";
+import CalendarDisplay from "@/components/calendar/CalendarDisplay";
 
 export default function Calendar() {
   const router = useRouter();
@@ -35,14 +32,7 @@ export default function Calendar() {
     { value: 6, label: "土曜日" },
   ];
 
-  // 初回レンダリング時に4週間分の献立を取得
-  // 4週間分の献立取得
-  useEffect(() => {
-    fetch(`/api/get-5weeks-meals?weekStartsOn=${weekStartsOn}`)
-      .then((res) => res.json())
-      .then((data) => setCalendar4weeks(data.calendar));
-  }, [weekStartsOn]);
-
+  // mainRecipesとsideRecipesの計算を追加
   const mainRecipes = useMemo(() => {
     if (!calendar) return [];
     const all = Object.values(calendar)
@@ -61,6 +51,13 @@ export default function Calendar() {
     return Array.from(new Map(all.map((r) => [r.id, r])).values());
   }, [calendar]);
 
+  // 初回レンダリング時に4週間分の献立を取得
+  useEffect(() => {
+    fetch(`/api/get-5weeks-meals?weekStartsOn=${weekStartsOn}`)
+      .then((res) => res.json())
+      .then((data) => setCalendar4weeks(data.calendar));
+  }, [weekStartsOn]); // weekStartsOnが変更されたときにも再取得
+
   // 献立生成リクエスト
   const handleGenerateMeals = async () => {
     setLoading(true);
@@ -72,7 +69,7 @@ export default function Calendar() {
         lunchSide,
         dinnerMain,
         dinnerSide,
-        weekStartsOn, // 週の開始曜日を追加
+        weekStartsOn,
       }),
     });
     const data = await res.json();
@@ -80,90 +77,12 @@ export default function Calendar() {
     setLoading(false);
   };
 
-  // カレンダー表示UI
-  const renderCalendar = (calendarData, isEditable = false) => {
-    // 日付を週の開始曜日に基づいてソート
-    const sortedDates = Object.entries(calendarData).sort(
-      ([dateA], [dateB]) => {
-        const a = new Date(dateA);
-        const b = new Date(dateB);
-        return a.getTime() - b.getTime();
-      }
-    );
-
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-7 gap-4 mt-8">
-        {sortedDates.map(([date, meals]) => (
-          <div key={date} className="border p-4 rounded shadow bg-white">
-            <h2 className="font-bold mb-2 text-lg">
-              {format(new Date(date), "M月d日(E)", { locale: ja })}
-            </h2>
-            <div>
-              <h3 className="font-semibold text-blue-600">昼食</h3>
-              <ul className="list-disc ml-5">
-                {meals.lunch.map((recipe, i) => (
-                  <li key={`lunch-${i}`} className="text-gray-700">
-                    {isEditable ? (
-                      <select
-                        value={recipe.id}
-                        onChange={(e) =>
-                          handleChangeRecipe(date, "lunch", i, e.target.value)
-                        }
-                        className="border rounded px-2 w-full"
-                      >
-                        {(recipe.type === "main"
-                          ? mainRecipes
-                          : sideRecipes
-                        ).map((r) => (
-                          <option key={r.id} value={r.id}>
-                            {r.title}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      recipe.title
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="mt-2">
-              <h3 className="font-semibold text-green-600">夕食</h3>
-              <ul className="list-disc ml-5">
-                {meals.dinner.map((recipe, i) => (
-                  <li key={`dinner-${i}`} className="text-gray-700">
-                    {isEditable ? (
-                      <select
-                        value={recipe.id}
-                        onChange={(e) =>
-                          handleChangeRecipe(date, "dinner", i, e.target.value)
-                        }
-                        className="border rounded px-2 w-full"
-                      >
-                        {(recipe.type === "main"
-                          ? mainRecipes
-                          : sideRecipes
-                        ).map((r) => (
-                          <option key={r.id} value={r.id}>
-                            {r.title}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      recipe.title
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  const handleChangeRecipe = (date, slot, index, newRecipeId) => {
-    // 新しいレシピをmainRecipes/sideRecipesから探す
+  const handleChangeRecipe = (
+    date: string,
+    slot: "lunch" | "dinner",
+    index: number,
+    newRecipeId: string
+  ) => {
     const allRecipes = [...mainRecipes, ...sideRecipes];
     const newRecipe = allRecipes.find((r) => r.id === newRecipeId);
     setCalendar((prev) => ({
@@ -209,6 +128,7 @@ export default function Calendar() {
         週間献立カレンダー
       </h1>
 
+      {/* 週の開始曜日選択 */}
       <div className="mb-4 p-4 border rounded">
         <h2 className="font-semibold mb-2">週の開始曜日を選択</h2>
         <select
@@ -224,6 +144,7 @@ export default function Calendar() {
         </select>
       </div>
 
+      {/* 主菜・副菜の数指定 */}
       <div className="mb-4 p-4 border rounded">
         <h2 className="font-semibold mb-2">主菜・副菜の数を指定</h2>
         <div className="flex gap-8">
@@ -282,21 +203,32 @@ export default function Calendar() {
           {loading ? "生成中..." : "献立を生成"}
         </button>
       </div>
+
+      {/* カレンダー表示 */}
       {calendar4weeks ? (
-        renderCalendar(calendar4weeks, false) // 4週間分は編集不可
+        <CalendarDisplay calendarData={calendar4weeks} isEditable={false} />
       ) : (
         <div>読み込み中...</div>
       )}
-      {calendar ? renderCalendar(calendar, true) : null}
+
       {calendar && (
-        <div className="mt-4 flex justify-center">
-          <button
-            onClick={handleSaveMeals}
-            className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 transition"
-          >
-            この献立を登録する
-          </button>
-        </div>
+        <>
+          <CalendarDisplay
+            calendarData={calendar}
+            isEditable={true}
+            mainRecipes={mainRecipes}
+            sideRecipes={sideRecipes}
+            onRecipeChange={handleChangeRecipe}
+          />
+          <div className="mt-4 flex justify-center">
+            <button
+              onClick={handleSaveMeals}
+              className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 transition"
+            >
+              この献立を登録する
+            </button>
+          </div>
+        </>
       )}
     </div>
   );
