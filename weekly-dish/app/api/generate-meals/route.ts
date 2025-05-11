@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"; 
 import { createClient } from "@/utils/supabase/server";
-import { addDays, format } from "date-fns";
+import { addDays, format, startOfWeek, endOfWeek } from "date-fns";
 
 type Recipe = {
   id: string;
@@ -21,12 +21,16 @@ function getRandomItems<T>(arr: T[], num: number): T[] {
 export async function POST (request: Request) {
     try {
        // 1. リクエストbodyから数値を取得
-    const { lunchMain, lunchSide, dinnerMain, dinnerSide } = await request.json();
+     const { lunchMain, lunchSide, dinnerMain, dinnerSide, weekStartsOn } = await request.json();
 
     const supabase = await createClient();
     const today = new Date();
+    // 週の開始日を計算
+    const weekStart = startOfWeek(today, { weekStartsOn: weekStartsOn });
+    
+    // 1週間分の日付を生成
     const dates = Array.from({ length: 7 }).map((_, i) =>
-      format(addDays(today, i), "yyyy-MM-dd")
+      format(addDays(weekStart, i), "yyyy-MM-dd")
     );
 
     // 2. レシピ全件取得
