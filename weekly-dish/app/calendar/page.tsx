@@ -20,7 +20,19 @@ export default function Calendar() {
 
   // 週の開始曜日を設定するstateを追加
   const [weekStartsOn, setWeekStartsOn] = useState(0); // 0: 日曜日, 1: 月曜日, ...
+  // 生成する日数を管理するstateを追加
+  const [daysToGenerate, setDaysToGenerate] = useState(7);
 
+  // 日数の選択肢
+  const daysOptions = [
+    { value: 1, label: "1日" },
+    { value: 2, label: "2日" },
+    { value: 3, label: "3日" },
+    { value: 4, label: "4日" },
+    { value: 5, label: "5日" },
+    { value: 6, label: "6日" },
+    { value: 7, label: "7日" },
+  ];
   // 週の開始曜日の選択肢
   const weekStartOptions = [
     { value: 0, label: "日曜日" },
@@ -70,6 +82,7 @@ export default function Calendar() {
         dinnerMain,
         dinnerSide,
         weekStartsOn,
+        daysToGenerate,
       }),
     });
     const data = await res.json();
@@ -143,7 +156,21 @@ export default function Calendar() {
           ))}
         </select>
       </div>
-
+      {/* 生成する日数の選択を追加 */}
+      <div className="mb-4 p-4 border rounded">
+        <h2 className="font-semibold mb-2">生成する日数を選択</h2>
+        <select
+          value={daysToGenerate}
+          onChange={(e) => setDaysToGenerate(Number(e.target.value))}
+          className="border rounded px-2 py-1"
+        >
+          {daysOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
       {/* 主菜・副菜の数指定 */}
       <div className="mb-4 p-4 border rounded">
         <h2 className="font-semibold mb-2">主菜・副菜の数を指定</h2>
