@@ -21,7 +21,7 @@ function getRandomItems<T>(arr: T[], num: number): T[] {
 export async function POST (request: Request) {
     try {
        // 1. リクエストbodyから数値を取得
-     const { lunchMain, lunchSide, dinnerMain, dinnerSide, weekStartsOn,daysToGenerate,startDate,
+     const { lunchMain, lunchSide, dinnerMain, dinnerSide, weekStartsOn,startDate,
       endDate  } = await request.json();
 
     const supabase = await createClient();
