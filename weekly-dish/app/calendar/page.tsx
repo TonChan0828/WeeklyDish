@@ -4,6 +4,7 @@ import React from "react";
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import CalendarDisplay from "@/components/calendar/CalendarDisplay";
+import { ja, format, addDays, parseISO } from "date-fns";
 
 export default function Calendar() {
   const router = useRouter();
@@ -22,6 +23,26 @@ export default function Calendar() {
   const [weekStartsOn, setWeekStartsOn] = useState(0); // 0: 日曜日, 1: 月曜日, ...
   // 生成する日数を管理するstateを追加
   const [daysToGenerate, setDaysToGenerate] = useState(7);
+
+  // 日付範囲の選択を管理するstateを追加
+  const [startDate, setStartDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [endDate, setEndDate] = useState(
+    format(addDays(new Date(), 6), "yyyy-MM-dd")
+  );
+
+  // 日付範囲の選択肢を生成する関数
+  const generateDateOptions = (startDate: string, days: number) => {
+    const options = [];
+    const start = parseISO(startDate);
+    for (let i = 0; i < days; i++) {
+      const date = addDays(start, i);
+      options.push({
+        value: format(date, "yyyy-MM-dd"),
+        label: format(date, "M月d日(E)", { locale: ja }),
+      });
+    }
+    return options;
+  };
 
   // 日数の選択肢
   const daysOptions = [
@@ -70,6 +91,28 @@ export default function Calendar() {
       .then((data) => setCalendar4weeks(data.calendar));
   }, [weekStartsOn]); // weekStartsOnが変更されたときにも再取得
 
+  // 開始日が変更されたときの処理
+  const handleStartDateChange = (newStartDate: string) => {
+    setStartDate(newStartDate);
+    // 終了日が開始日より前にならないように調整
+    const start = parseISO(newStartDate);
+    const end = parseISO(endDate);
+    if (end < start) {
+      setEndDate(format(start, "yyyy-MM-dd"));
+    }
+  };
+
+  // 終了日が変更されたときの処理
+  const handleEndDateChange = (newEndDate: string) => {
+    setEndDate(newEndDate);
+    // 開始日が終了日より後にならないように調整
+    const start = parseISO(startDate);
+    const end = parseISO(newEndDate);
+    if (start > end) {
+      setStartDate(format(end, "yyyy-MM-dd"));
+    }
+  };
+
   // 献立生成リクエスト
   const handleGenerateMeals = async () => {
     setLoading(true);
@@ -83,6 +126,8 @@ export default function Calendar() {
         dinnerSide,
         weekStartsOn,
         daysToGenerate,
+        startDate,
+        endDate,
       }),
     });
     const data = await res.json();
@@ -140,6 +185,42 @@ export default function Calendar() {
       >
         週間献立カレンダー
       </h1>
+
+      {/* 日付範囲の選択を追加 */}
+      <div className="mb-4 p-4 border rounded">
+        <h2 className="font-semibold mb-2">日付範囲を選択</h2>
+        <div className="flex gap-4 items-center">
+          <div>
+            <label className="block text-sm mb-1">開始日</label>
+            <select
+              value={startDate}
+              onChange={(e) => handleStartDateChange(e.target.value)}
+              className="border rounded px-2 py-1"
+            >
+              {generateDateOptions(startDate, 30).map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <span className="text-lg">〜</span>
+          <div>
+            <label className="block text-sm mb-1">終了日</label>
+            <select
+              value={endDate}
+              onChange={(e) => handleEndDateChange(e.target.value)}
+              className="border rounded px-2 py-1"
+            >
+              {generateDateOptions(startDate, 30).map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
 
       {/* 週の開始曜日選択 */}
       <div className="mb-4 p-4 border rounded">

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"; 
 import { createClient } from "@/utils/supabase/server";
-import { addDays, format, startOfWeek, endOfWeek } from "date-fns";
+import { addDays, format, parseISO, eachDayOfInterval } from "date-fns";
 
 type Recipe = {
   id: string;
@@ -21,17 +21,17 @@ function getRandomItems<T>(arr: T[], num: number): T[] {
 export async function POST (request: Request) {
     try {
        // 1. リクエストbodyから数値を取得
-     const { lunchMain, lunchSide, dinnerMain, dinnerSide, weekStartsOn,daysToGenerate } = await request.json();
+     const { lunchMain, lunchSide, dinnerMain, dinnerSide, weekStartsOn,daysToGenerate,startDate,
+      endDate  } = await request.json();
 
     const supabase = await createClient();
     const today = new Date();
-    // 週の開始日を計算
-    const weekStart = startOfWeek(today, { weekStartsOn: weekStartsOn });
     
-    // 指定された日数分の日付を生成
-    const dates = Array.from({ length: daysToGenerate }).map((_, i) =>
-      format(addDays(weekStart, i), "yyyy-MM-dd")
-    );
+    // 指// 日付範囲から日付の配列を生成
+    const dates = eachDayOfInterval({
+      start: parseISO(startDate),
+      end: parseISO(endDate)
+    }).map(date => format(date, "yyyy-MM-dd"));
 
     // 2. レシピ全件取得
     const { data: recipes, error } = await supabase
