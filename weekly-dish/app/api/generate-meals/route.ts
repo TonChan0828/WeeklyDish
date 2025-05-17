@@ -4,10 +4,18 @@ import { addDays, format, parseISO, eachDayOfInterval } from "date-fns";
 
 type Recipe = {
   id: string;
-  name: string;
-    duration_days: number;
-    time_slot: string[];
-    category: string;
+  title: string;
+  type: string;
+  duration_days: number;
+  time_slot: string[];
+  category: string;
+  servings: number;
+  cooking_time: number;
+  difficulty: string;
+  image_url: string;
+  description: string;
+  created_at: string;
+  updated_at: string;
 };
 
 
@@ -44,7 +52,7 @@ export async function POST (request: Request) {
 
     // 3. 主菜・副菜でレシピを分類
     const mainRecipes = recipes.filter(r => r.type === "main");
-        const sideRecipes = recipes.filter(r => r.type === "side");
+    const sideRecipes = recipes.filter(r => r.type === "side");
         
     // すでに使ったレシピIDを記録
     let usedMainIds: string[] = [];

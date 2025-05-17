@@ -4,7 +4,29 @@ import React from "react";
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import CalendarDisplay from "@/components/calendar/CalendarDisplay";
-import { ja, format, addDays, parseISO } from "date-fns";
+import { format, addDays, parseISO } from "date-fns";
+import { ja } from "date-fns/locale";
+
+interface Recipe {
+  id: string;
+  title: string;
+  type: "main" | "side";
+  category: string;
+  servings: number;
+  cooking_time: number;
+  difficulty: string;
+  image_url: string;
+  description: string;
+}
+
+interface DayMeals {
+  lunch: Recipe[];
+  dinner: Recipe[];
+}
+
+interface CalendarData {
+  [date: string]: DayMeals;
+}
 
 export default function Calendar() {
   const router = useRouter();
@@ -56,19 +78,17 @@ export default function Calendar() {
   // mainRecipesとsideRecipesの計算を追加
   const mainRecipes = useMemo(() => {
     if (!calendar) return [];
-    const all = Object.values(calendar)
+    const all = Object.values(calendar as CalendarData)
       .flatMap((day) => [...day.lunch, ...day.dinner])
       .filter((recipe) => recipe.type === "main");
-    // 重複除去（idでユニーク化）
     return Array.from(new Map(all.map((r) => [r.id, r])).values());
   }, [calendar]);
 
   const sideRecipes = useMemo(() => {
     if (!calendar) return [];
-    const all = Object.values(calendar)
+    const all = Object.values(calendar as CalendarData)
       .flatMap((day) => [...day.lunch, ...day.dinner])
       .filter((recipe) => recipe.type === "side");
-    // 重複除去（idでユニーク化）
     return Array.from(new Map(all.map((r) => [r.id, r])).values());
   }, [calendar]);
 

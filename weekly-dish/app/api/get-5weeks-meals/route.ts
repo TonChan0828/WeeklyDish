@@ -22,7 +22,22 @@ export async function GET(request:Request) {
     // ここでは例として、DBに保存済みの献立履歴から取得
     const { data: meals, error } = await supabase
       .from("meal_entries")
-      .select("date, time_slot, recipe:recipes(*)")
+      .select(`
+        date,
+        time_slot,
+        notes,
+        recipe:recipes (
+          id,
+          title,
+          type,
+          category,
+          servings,
+          cooking_time,
+          difficulty,
+          image_url,
+          description
+        )
+      `)
       .in("date", dates);
 
     if (error || !meals) {
@@ -30,7 +45,7 @@ export async function GET(request:Request) {
     }
 
     // 日付ごとにまとめる
-    const calendar = {};
+    const calendar: Record<string, { lunch: any[]; dinner: any[] }> = {};
     for (const date of dates) {
       calendar[date] = { lunch: [], dinner: [] };
     }

@@ -3,13 +3,20 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 
+interface MealEntry {
+  date: string;
+  time_slot: "lunch" | "dinner";
+  recipe: string;
+  notes?: string;
+}
+
 export async function POST(request: Request) {
   try {
     const { calendar } = await request.json();
     const supabase = await createClient();
 
-    // 献立データをmeal_historyテーブルに保存
-    const entries = [];
+    // 献立データをmeal_entriesテーブルに保存
+    const entries: MealEntry[] = [];
     for (const [date, meals] of Object.entries(calendar)) {
       // 昼食の登録
       for (const recipe of meals.lunch) {
@@ -17,6 +24,7 @@ export async function POST(request: Request) {
           date,
           time_slot: "lunch",
           recipe: recipe.id,
+          notes: recipe.notes
         });
       }
       // 夕食の登録
@@ -25,6 +33,7 @@ export async function POST(request: Request) {
           date,
           time_slot: "dinner",
           recipe: recipe.id,
+          notes: recipe.notes
         });
       }
     }
