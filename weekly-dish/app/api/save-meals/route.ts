@@ -6,7 +6,7 @@ import { createClient } from "@/utils/supabase/server";
 interface MealEntry {
   date: string;
   time_slot: "lunch" | "dinner";
-  recipe: string;
+  recipe_id: string; // DBのカラム名に合わせて修正
   notes?: string;
 }
 
@@ -23,8 +23,8 @@ export async function POST(request: Request) {
         entries.push({
           date,
           time_slot: "lunch",
-          recipe: recipe.id,
-          notes: recipe.notes
+          recipe_id: recipe.id, // カラム名を修正
+          notes: recipe.notes,
         });
       }
       // 夕食の登録
@@ -32,8 +32,8 @@ export async function POST(request: Request) {
         entries.push({
           date,
           time_slot: "dinner",
-          recipe: recipe.id,
-          notes: recipe.notes
+          recipe_id: recipe.id, // カラム名を修正
+          notes: recipe.notes,
         });
       }
     }
