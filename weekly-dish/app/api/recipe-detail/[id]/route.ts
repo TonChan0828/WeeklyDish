@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 // context.params.id で取得
 export async function GET(request: Request, context: { params: { id: string } }) {
   const supabase = await createClient();
-  const recipeId = context.params.id;
+  const { id: recipeId } = await context.params;
 
   const { data: ingredients } = await supabase
     .from("ingredients")
