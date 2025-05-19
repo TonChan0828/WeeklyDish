@@ -4,6 +4,7 @@ import React from "react";
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import CalendarDisplay from "@/components/calendar/CalendarDisplay";
+import ShoppingList from "./ShoppingList";
 import { format, addDays, parseISO } from "date-fns";
 import { ja } from "date-fns/locale";
 
@@ -185,152 +186,159 @@ export default function Calendar() {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <h1
-        className="text-2xl font-bold mb-4 cursor-pointer hover:text-blue-600 transition"
-        onClick={() => router.push("/calendar")}
-      >
-        週間献立カレンダー
-      </h1>
+    <div className="flex flex-col md:flex-row gap-8">
+      <div className="flex-1">
+        <div className="container mx-auto p-4">
+          <h1
+            className="text-2xl font-bold mb-4 cursor-pointer hover:text-blue-600 transition"
+            onClick={() => router.push("/calendar")}
+          >
+            週間献立カレンダー
+          </h1>
 
-      {/* 日付範囲の選択を追加 */}
-      <div className="mb-4 p-4 border rounded">
-        <h2 className="font-semibold mb-2">日付範囲を選択</h2>
-        <div className="flex gap-4 items-center">
-          <div>
-            <label className="block text-sm mb-1">開始日</label>
+          {/* 日付範囲の選択を追加 */}
+          <div className="mb-4 p-4 border rounded">
+            <h2 className="font-semibold mb-2">日付範囲を選択</h2>
+            <div className="flex gap-4 items-center">
+              <div>
+                <label className="block text-sm mb-1">開始日</label>
+                <select
+                  value={startDate}
+                  onChange={(e) => handleStartDateChange(e.target.value)}
+                  className="border rounded px-2 py-1"
+                >
+                  {generateDateOptions(startDate, 30).map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <span className="text-lg">〜</span>
+              <div>
+                <label className="block text-sm mb-1">終了日</label>
+                <select
+                  value={endDate}
+                  onChange={(e) => handleEndDateChange(e.target.value)}
+                  className="border rounded px-2 py-1"
+                >
+                  {generateDateOptions(startDate, 30).map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* 週の開始曜日選択 */}
+          <div className="mb-4 p-4 border rounded">
+            <h2 className="font-semibold mb-2">週の開始曜日を選択</h2>
             <select
-              value={startDate}
-              onChange={(e) => handleStartDateChange(e.target.value)}
+              value={weekStartsOn}
+              onChange={(e) => setWeekStartsOn(Number(e.target.value))}
               className="border rounded px-2 py-1"
             >
-              {generateDateOptions(startDate, 30).map((option) => (
+              {weekStartOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
               ))}
             </select>
           </div>
-          <span className="text-lg">〜</span>
-          <div>
-            <label className="block text-sm mb-1">終了日</label>
-            <select
-              value={endDate}
-              onChange={(e) => handleEndDateChange(e.target.value)}
-              className="border rounded px-2 py-1"
-            >
-              {generateDateOptions(startDate, 30).map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </div>
 
-      {/* 週の開始曜日選択 */}
-      <div className="mb-4 p-4 border rounded">
-        <h2 className="font-semibold mb-2">週の開始曜日を選択</h2>
-        <select
-          value={weekStartsOn}
-          onChange={(e) => setWeekStartsOn(Number(e.target.value))}
-          className="border rounded px-2 py-1"
-        >
-          {weekStartOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* 主菜・副菜の数指定 */}
-      <div className="mb-4 p-4 border rounded">
-        <h2 className="font-semibold mb-2">主菜・副菜の数を指定</h2>
-        <div className="flex gap-8">
-          <div>
-            <h3 className="font-bold">昼食</h3>
-            <label>
-              主菜:
-              <input
-                type="number"
-                min={0}
-                value={lunchMain}
-                onChange={(e) => setLunchMain(Number(e.target.value))}
-                className="border ml-2 w-12"
-              />
-            </label>
-            <label className="ml-4">
-              副菜:
-              <input
-                type="number"
-                min={0}
-                value={lunchSide}
-                onChange={(e) => setLunchSide(Number(e.target.value))}
-                className="border ml-2 w-12"
-              />
-            </label>
-          </div>
-          <div>
-            <h3 className="font-bold">夕食</h3>
-            <label>
-              主菜:
-              <input
-                type="number"
-                min={0}
-                value={dinnerMain}
-                onChange={(e) => setDinnerMain(Number(e.target.value))}
-                className="border ml-2 w-12"
-              />
-            </label>
-            <label className="ml-4">
-              副菜:
-              <input
-                type="number"
-                min={0}
-                value={dinnerSide}
-                onChange={(e) => setDinnerSide(Number(e.target.value))}
-                className="border ml-2 w-12"
-              />
-            </label>
-          </div>
-        </div>
-        <button
-          onClick={handleGenerateMeals}
-          disabled={loading}
-          className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-gray-400"
-        >
-          {loading ? "生成中..." : "献立を生成"}
-        </button>
-      </div>
-
-      {/* カレンダー表示 */}
-      {calendar4weeks ? (
-        <CalendarDisplay calendarData={calendar4weeks} isEditable={false} />
-      ) : (
-        <div>読み込み中...</div>
-      )}
-
-      {calendar && (
-        <>
-          <CalendarDisplay
-            calendarData={calendar}
-            isEditable={true}
-            mainRecipes={mainRecipes}
-            sideRecipes={sideRecipes}
-            onRecipeChange={handleChangeRecipe}
-          />
-          <div className="mt-4 flex justify-center">
+          {/* 主菜・副菜の数指定 */}
+          <div className="mb-4 p-4 border rounded">
+            <h2 className="font-semibold mb-2">主菜・副菜の数を指定</h2>
+            <div className="flex gap-8">
+              <div>
+                <h3 className="font-bold">昼食</h3>
+                <label>
+                  主菜:
+                  <input
+                    type="number"
+                    min={0}
+                    value={lunchMain}
+                    onChange={(e) => setLunchMain(Number(e.target.value))}
+                    className="border ml-2 w-12"
+                  />
+                </label>
+                <label className="ml-4">
+                  副菜:
+                  <input
+                    type="number"
+                    min={0}
+                    value={lunchSide}
+                    onChange={(e) => setLunchSide(Number(e.target.value))}
+                    className="border ml-2 w-12"
+                  />
+                </label>
+              </div>
+              <div>
+                <h3 className="font-bold">夕食</h3>
+                <label>
+                  主菜:
+                  <input
+                    type="number"
+                    min={0}
+                    value={dinnerMain}
+                    onChange={(e) => setDinnerMain(Number(e.target.value))}
+                    className="border ml-2 w-12"
+                  />
+                </label>
+                <label className="ml-4">
+                  副菜:
+                  <input
+                    type="number"
+                    min={0}
+                    value={dinnerSide}
+                    onChange={(e) => setDinnerSide(Number(e.target.value))}
+                    className="border ml-2 w-12"
+                  />
+                </label>
+              </div>
+            </div>
             <button
-              onClick={handleSaveMeals}
-              className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 transition"
+              onClick={handleGenerateMeals}
+              disabled={loading}
+              className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-gray-400"
             >
-              この献立を登録する
+              {loading ? "生成中..." : "献立を生成"}
             </button>
           </div>
-        </>
-      )}
+
+          {/* カレンダー表示 */}
+          {calendar4weeks ? (
+            <CalendarDisplay calendarData={calendar4weeks} isEditable={false} />
+          ) : (
+            <div>読み込み中...</div>
+          )}
+
+          {calendar && (
+            <>
+              <CalendarDisplay
+                calendarData={calendar}
+                isEditable={true}
+                mainRecipes={mainRecipes}
+                sideRecipes={sideRecipes}
+                onRecipeChange={handleChangeRecipe}
+              />
+              <div className="mt-4 flex justify-center">
+                <button
+                  onClick={handleSaveMeals}
+                  className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 transition"
+                >
+                  この献立を登録する
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+      <div className="w-full md:w-[400px]">
+        <ShoppingList />
+      </div>
     </div>
   );
 }
