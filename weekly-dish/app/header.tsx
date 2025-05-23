@@ -18,6 +18,9 @@ export default function Header() {
         <Link href="/shoppingList" className="text-white ml-4">
           Shopping List
         </Link>
+        <Link href="/sign-out" className="text-white ml-4">
+          Sign Out
+        </Link>
       </div>
     </>
   );
