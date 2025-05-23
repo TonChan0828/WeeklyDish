@@ -5,6 +5,8 @@ import { addDays, subDays, format, startOfWeek }from "date-fns";
 export async function GET(request:Request) {
   try {
     const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: "未認証" }, { status: 401 });
     
     // URLから週の開始曜日を取得（デフォルトは日曜日）
     const url = new URL(request.url);
@@ -38,6 +40,7 @@ export async function GET(request:Request) {
           description
         )
       `)
+      .eq("user_id",user.id)
       .in("date", dates);
 
     if (error || !meals) {

@@ -6,14 +6,17 @@ import { createClient } from "@/utils/supabase/server";
 interface MealEntry {
   date: string;
   time_slot: "lunch" | "dinner";
-  recipe_id: string; // DBのカラム名に合わせて修正
+  recipe_id: string; 
   notes?: string;
+  user_id: string; 
 }
 
 export async function POST(request: Request) {
   try {
     const { calendar } = await request.json();
     const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: "未認証" }, { status: 401 });
 
     // 献立データをmeal_entriesテーブルに保存
     const entries: MealEntry[] = [];
@@ -23,8 +26,9 @@ export async function POST(request: Request) {
         entries.push({
           date,
           time_slot: "lunch",
-          recipe_id: recipe.id, // カラム名を修正
+          recipe_id: recipe.id, 
           notes: recipe.notes,
+          user_id: user.id, 
         });
       }
       // 夕食の登録
@@ -32,8 +36,9 @@ export async function POST(request: Request) {
         entries.push({
           date,
           time_slot: "dinner",
-          recipe_id: recipe.id, // カラム名を修正
+          recipe_id: recipe.id, 
           notes: recipe.notes,
+          user_id: user.id,
         });
       }
     }
