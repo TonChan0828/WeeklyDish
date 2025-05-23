@@ -45,7 +45,7 @@ export default function Header() {
             <span>カレンダー</span>
           </Link>
           <Link
-            href="/shoppingList"
+            href="/shopping-list"
             className="flex items-center space-x-1 hover:text-white transition"
           >
             <FaShoppingCart />
