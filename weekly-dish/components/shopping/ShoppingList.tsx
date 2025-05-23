@@ -1,9 +1,13 @@
 "use client";
 import { useState } from "react";
+import { format, addDays } from "date-fns";
 
 export default function ShoppingList() {
-  const [start, setStart] = useState("");
-  const [end, setEnd] = useState("");
+  // 今日と明日の日付を初期値に設定
+  const today = format(new Date(), "yyyy-MM-dd");
+  const tomorrow = format(addDays(new Date(), 1), "yyyy-MM-dd");
+  const [start, setStart] = useState(today);
+  const [end, setEnd] = useState(tomorrow);
   const [list, setList] = useState<any[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
