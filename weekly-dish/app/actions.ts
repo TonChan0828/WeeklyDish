@@ -19,7 +19,7 @@ export const signUpAction = async (formData: FormData) => {
     );
   }
 
-  const { error } = await supabase.auth.signUp({
+  const { error, data } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -31,6 +31,17 @@ export const signUpAction = async (formData: FormData) => {
     console.error(error.code + " " + error.message);
     return encodedRedirect("error", "/sign-up", error.message);
   } else {
+    // サインアップ直後にuser_profilesにも初期レコードを作成
+    if (data?.user) {
+      // 認証メール確認前でもIDは発行される
+      await supabase.from("user_profiles").upsert({
+        id: data.user.id,
+        name: "",
+        avatar_url: "",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+    }
     return encodedRedirect(
       "success",
       "/sign-up",
