@@ -4,7 +4,7 @@ import React from "react";
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import CalendarDisplay from "@/components/calendar/CalendarDisplay";
-import ShoppingList from "./ShoppingList";
+import ShoppingList from "@/components/shopping/ShoppingList";
 import { format, addDays, parseISO } from "date-fns";
 import { ja } from "date-fns/locale";
 

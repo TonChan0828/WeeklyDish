@@ -21,6 +21,7 @@ export default function ShoppingList() {
         setError(data.error || "エラーが発生しました");
       }
     } catch (e) {
+      console.error("通信エラー:", e);
       setError("通信エラー");
     } finally {
       setLoading(false);
