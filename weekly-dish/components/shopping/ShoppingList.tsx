@@ -33,7 +33,7 @@ export default function ShoppingList() {
   };
 
   return (
-    <div className="max-w-xl mx-auto p-4">
+    <div className="max-w-xl mx-auto p-4 place-items-center ">
       <h2 className="text-xl font-bold mb-4">買い物リスト自動生成</h2>
       <div className="flex gap-2 mb-4">
         <input

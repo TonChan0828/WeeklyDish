@@ -187,7 +187,7 @@ export default function Calendar() {
 
   return (
     <div className="flex flex-col md:flex-row gap-8">
-      <div className="flex-1">
+      <div className="flex-auto">
         <div className="container mx-auto p-4">
           <h1
             className="text-2xl font-bold mb-4 cursor-pointer hover:text-blue-600 transition"

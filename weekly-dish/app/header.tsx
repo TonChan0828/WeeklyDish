@@ -5,8 +5,8 @@ import Link from "next/link";
 export default function Header() {
   return (
     <>
-      <div className="bg-blue-600 h-12 flex">
-        <p>Header</p>
+      <div className="bg-blue-600 h-12 flex  text-xl">
+        <h1 className="text-white text-3xl">Weekly Dish</h1>
         <Link href="/profile" className="text-white ml-auto">
           Profile
         </Link>
