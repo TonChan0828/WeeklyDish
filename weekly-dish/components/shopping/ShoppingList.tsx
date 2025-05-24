@@ -60,24 +60,26 @@ export default function ShoppingList() {
       {loading && <p>読み込み中...</p>}
       {error && <p className="text-red-500">{error}</p>}
       {list && (
-        <table className="w-full border mt-4">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="border px-2 py-1">材料名</th>
-              <th className="border px-2 py-1">合計量</th>
-              <th className="border px-2 py-1">単位</th>
-            </tr>
-          </thead>
-          <tbody>
-            {list.map((item, i) => (
-              <tr key={item.name + item.unit + i}>
-                <td className="border px-2 py-1">{item.name}</td>
-                <td className="border px-2 py-1">{item.total_amount}</td>
-                <td className="border px-2 py-1">{item.unit}</td>
+        <div className="overflow-x-auto mt-4 rounded-lg shadow border bg-white/90">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-blue-100 text-blue-700">
+                <th className="border px-2 py-1">材料名</th>
+                <th className="border px-2 py-1">合計量</th>
+                <th className="border px-2 py-1">単位</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {list.map((item, i) => (
+                <tr key={item.name + item.unit + i} className="hover:bg-blue-50">
+                  <td className="border px-2 py-1">{item.name}</td>
+                  <td className="border px-2 py-1">{item.total_amount}</td>
+                  <td className="border px-2 py-1">{item.unit}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
