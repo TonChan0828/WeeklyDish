@@ -19,16 +19,23 @@ export default async function Signup(props: {
   }
 
   return (
-    <>
-      <form className="flex flex-col min-w-64 max-w-64 mx-auto">
-        <h1 className="text-2xl font-medium">Sign up</h1>
-        <p className="text-sm text text-foreground">
+    <div className="fixed inset-0 flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
+      <form className="w-full max-w-md bg-white/90 rounded-2xl shadow-xl p-8">
+        <div className="flex items-center gap-2 mb-6">
+          <span className="inline-block bg-blue-500 text-white rounded-full px-3 py-1 text-xs font-bold tracking-widest shadow">
+            WeeklyDish
+          </span>
+          <h1 className="text-2xl font-extrabold text-blue-700 drop-shadow-sm">
+            Sign up
+          </h1>
+        </div>
+        <p className="text-sm text-gray-600 mb-4">
           Already have an account?{" "}
-          <Link className="text-primary font-medium underline" href="/sign-in">
+          <Link className="text-blue-600 font-medium underline" href="/sign-in">
             Sign in
           </Link>
         </p>
-        <div className="flex flex-col gap-2 [&>input]:mb-3 mt-8">
+        <div className="flex flex-col gap-2 mt-6">
           <Label htmlFor="email">Email</Label>
           <Input name="email" placeholder="you@example.com" required />
           <Label htmlFor="password">Password</Label>
@@ -46,6 +53,6 @@ export default async function Signup(props: {
         </div>
       </form>
       <SmtpMessage />
-    </>
+    </div>
   );
 }
