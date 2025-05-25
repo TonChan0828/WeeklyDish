@@ -81,7 +81,7 @@ export default function Calendar() {
     if (!calendar) return [];
     const all = Object.values(calendar as CalendarData)
       .flatMap((day) => [...day.lunch, ...day.dinner])
-      .filter((recipe) => recipe.type === "main");
+      .filter((recipe) => recipe && recipe.type === "main"); // nullチェック追加
     return Array.from(new Map(all.map((r) => [r.id, r])).values());
   }, [calendar]);
 
@@ -89,7 +89,7 @@ export default function Calendar() {
     if (!calendar) return [];
     const all = Object.values(calendar as CalendarData)
       .flatMap((day) => [...day.lunch, ...day.dinner])
-      .filter((recipe) => recipe.type === "side");
+      .filter((recipe) => recipe && recipe.type === "side"); // nullチェック追加
     return Array.from(new Map(all.map((r) => [r.id, r])).values());
   }, [calendar]);
 
@@ -347,6 +347,7 @@ export default function Calendar() {
           )}
         </div>
       </div>
+      
       {/* 買い物リストを中央寄せ＆カード風に改善 */}
       <div className="w-full md:w-[600px] flex justify-center items-start mt-8 md:mt-16">
         <div className="w-full max-w-md bg-white/90 rounded-xl shadow-lg p-3">

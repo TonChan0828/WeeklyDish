@@ -23,7 +23,7 @@ interface CalendarDisplayProps {
     date: string,
     slot: "lunch" | "dinner",
     index: number,
-    newRecipeId: string
+    newRecipeId: string | null
   ) => void;
 }
 
@@ -175,7 +175,7 @@ interface MealSectionProps {
   isEditable: boolean;
   mainRecipes: Recipe[];
   sideRecipes: Recipe[];
-  onRecipeChange: (index: number, newRecipeId: string) => void;
+  onRecipeChange: (index: number, newRecipeId: string | null) => void;
   onRecipeClick?: (recipe: Recipe) => void; // 追加
   className?: string;
 }
@@ -198,24 +198,30 @@ function MealSection({
           <li
             key={`${title}-${i}`}
             className={`text-gray-700 ${!isEditable ? "cursor-pointer hover:underline" : ""}`}
-            onClick={() => !isEditable && onRecipeClick?.(recipe)}
+            onClick={() => !isEditable && recipe && onRecipeClick?.(recipe)}
           >
             {isEditable ? (
               <select
-                value={recipe.id}
-                onChange={(e) => onRecipeChange(i, e.target.value)}
+                value={recipe ? recipe.id : ""}
+                onChange={(e) => onRecipeChange(i, e.target.value || null)}
                 className="border rounded px-2 w-full"
               >
-                {(recipe.type === "main" ? mainRecipes : sideRecipes).map(
-                  (r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.title}
-                    </option>
-                  )
-                )}
+                <option value="">（選択しない）</option>
+                {/* recipeがnullの場合はmainRecipesをデフォルトで表示 */}
+                {((recipe && recipe.type === "main") || (!recipe && title === "昼食"))
+                  ? mainRecipes.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {r.title}
+                      </option>
+                    ))
+                  : sideRecipes.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {r.title}
+                      </option>
+                    ))}
               </select>
             ) : (
-              recipe.title
+              recipe ? recipe.title : <span className="text-gray-400">（選択なし）</span>
             )}
           </li>
         ))}

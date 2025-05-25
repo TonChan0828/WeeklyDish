@@ -20,9 +20,11 @@ export async function POST(request: Request) {
 
     // 献立データをmeal_entriesテーブルに保存
     const entries: MealEntry[] = [];
-    for (const [date, meals] of Object.entries(calendar)) {
+    for (const [date, mealsRaw] of Object.entries(calendar)) {
+      const meals = mealsRaw as { lunch: any[]; dinner: any[] };
       // 昼食の登録
       for (const recipe of meals.lunch) {
+        if (!recipe) continue; // null/未選択はスキップ
         entries.push({
           date,
           time_slot: "lunch",
@@ -33,6 +35,7 @@ export async function POST(request: Request) {
       }
       // 夕食の登録
       for (const recipe of meals.dinner) {
+        if (!recipe) continue; // null/未選択はスキップ
         entries.push({
           date,
           time_slot: "dinner",
