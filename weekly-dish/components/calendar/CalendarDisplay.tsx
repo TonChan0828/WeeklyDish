@@ -103,41 +103,58 @@ export default function CalendarDisplay({
           onClick={() => setSelectedRecipe(null)}
         >
           <div
-            className="bg-white p-6 rounded shadow-lg min-w-[300px] max-w-[90vw] relative"
+            className="relative bg-gradient-to-br from-blue-50 to-green-100 p-8 rounded-3xl shadow-2xl min-w-[320px] max-w-[95vw] w-full sm:w-[420px] border border-blue-200 flex flex-col items-center"
             onClick={(e) => e.stopPropagation()}
           >
             <button
-              className="absolute top-2 right-4 text-2xl"
+              className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-blue-100 text-blue-700 text-2xl font-bold shadow hover:bg-blue-200 transition-colors border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
               onClick={() => setSelectedRecipe(null)}
+              aria-label="閉じる"
+              type="button"
             >
               ×
             </button>
-            <h2 className="text-xl font-bold mb-2">{selectedRecipe.title}</h2>
-            <p className="mb-1">
-              種類: {selectedRecipe.type === "main" ? "主菜" : "副菜"}
+            <h2 className="text-2xl font-extrabold mb-2 text-blue-700 drop-shadow-sm text-center">
+              {selectedRecipe.title}
+            </h2>
+            <p className="mb-3 text-base text-blue-500 font-semibold text-center">
+              種類:{" "}
+              <span className="inline-block px-2 py-1 rounded bg-blue-200/60 text-blue-800 text-sm font-bold">
+                {selectedRecipe.type === "main" ? "主菜" : "副菜"}
+              </span>
             </p>
             {/* ここから詳細 */}
-            {loading && <p>読み込み中...</p>}
+            {loading && <p className="text-blue-600 font-semibold">読み込み中...</p>}
             {detail && (
               <>
-                <h3 className="font-bold mt-4">材料</h3>
-                <ul className="list-disc ml-5">
+                <h3 className="font-bold mt-4 mb-1 text-lg text-green-700 flex items-center gap-2">
+                  <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  材料
+                </h3>
+                <ul className="list-none ml-0 mb-4 w-full">
                   {detail.ingredients.map((ing: any) => (
-                    <li key={ing.id}>
-                      {ing.name} {ing.amount}
-                      {ing.unit} {ing.notes && `(${ing.notes})`}
+                    <li key={ing.id} className="flex items-center gap-2 py-1 border-b border-dashed border-blue-100 last:border-b-0 text-gray-700">
+                      <span className="inline-block w-2 h-2 rounded-full bg-blue-400 mr-2"></span>
+                      <span className="font-medium">{ing.name}</span>
+                      <span className="text-sm text-gray-500">{ing.amount}{ing.unit}</span>
+                      {ing.notes && <span className="ml-2 text-xs text-gray-400">({ing.notes})</span>}
                     </li>
                   ))}
                 </ul>
-                <h3 className="font-bold mt-4">手順</h3>
-                <ol className="list-decimal ml-5">
+                <h3 className="font-bold mt-4 mb-1 text-lg text-orange-700 flex items-center gap-2">
+                  <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
+                  </svg>
+                  手順
+                </h3>
+                <ol className="list-decimal ml-5 w-full">
                   {detail.steps.map((step: any) => (
-                    <li key={step.id}>
-                      {step.description}
+                    <li key={step.id} className="mb-2 text-gray-800">
+                      <span className="font-medium">{step.description}</span>
                       {step.tips && (
-                        <span className="text-xs text-gray-500">
-                          （{step.tips}）
-                        </span>
+                        <span className="ml-2 text-xs text-gray-500">（{step.tips}）</span>
                       )}
                     </li>
                   ))}
