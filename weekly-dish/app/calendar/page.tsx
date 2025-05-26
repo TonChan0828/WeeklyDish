@@ -37,9 +37,11 @@ export default function Calendar() {
   const [dinnerMain, setDinnerMain] = useState(1);
   const [dinnerSide, setDinnerSide] = useState(3);
   // 1週間分の新しい献立
-  const [calendar, setCalendar] = useState(null);
+  const [calendar, setCalendar] = useState<CalendarData | null>(null);
   // 4週間分の献立
-  const [calendar4weeks, setCalendar4weeks] = useState(null);
+  const [calendar4weeks, setCalendar4weeks] = useState<CalendarData | null>(
+    null
+  );
   const [loading, setLoading] = useState(false);
 
   // 週の開始曜日を設定するstateを追加
@@ -143,21 +145,27 @@ export default function Calendar() {
     setLoading(false);
   };
 
+  // 編集用カレンダーのレシピ変更
   const handleChangeRecipe = (
     date: string,
     slot: "lunch" | "dinner",
     index: number,
-    newRecipeId: string
+    newRecipeId: string | null
   ) => {
     const allRecipes = [...mainRecipes, ...sideRecipes];
-    const newRecipe = allRecipes.find((r) => r.id === newRecipeId);
-    setCalendar((prev) => ({
-      ...prev,
-      [date]: {
+    const newRecipe = allRecipes.find((r) => r.id === newRecipeId) || null;
+    setCalendar((prev) => {
+      if (!prev) return prev;
+      const newObj: CalendarData = { ...prev };
+      const prevSlotArr = prev[date]?.[slot] as (Recipe | null)[] | undefined;
+      newObj[date] = {
         ...prev[date],
-        [slot]: prev[date][slot].map((r, i) => (i === index ? newRecipe : r)),
-      },
-    }));
+        [slot]: prevSlotArr
+          ? prevSlotArr.map((r, i) => (i === index ? newRecipe : r))
+          : [],
+      };
+      return newObj;
+    });
   };
 
   // 献立登録用の関数を追加
@@ -182,6 +190,41 @@ export default function Calendar() {
     } catch (error) {
       console.error("登録エラー:", error);
       alert("献立の登録に失敗しました");
+    }
+  };
+
+  // 4週間分のカレンダー（DB登録済み）からメニューを削除
+  const handleDeleteRegisteredRecipe = async (
+    date: string,
+    slot: "lunch" | "dinner",
+    index: number
+  ) => {
+    if (!calendar4weeks) return;
+    const slotArr = calendar4weeks[date]?.[slot] as Recipe[] | undefined;
+    const recipeId = slotArr && slotArr[index] ? slotArr[index].id : undefined;
+    if (!recipeId) return;
+    // 画面上から即時削除
+    setCalendar4weeks((prev) => {
+      if (!prev) return prev;
+      // prevの型をCalendarDataとみなして型安全に書く
+      const newObj: CalendarData = { ...prev };
+      const prevSlotArr = prev[date]?.[slot] as Recipe[] | undefined;
+      newObj[date] = {
+        ...prev[date],
+        [slot]: prevSlotArr ? prevSlotArr.filter((_, i) => i !== index) : [],
+      };
+      return newObj;
+    });
+    // DBからも削除
+    try {
+      const res = await fetch("/api/save-meals", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ date, time_slot: slot, recipe_id: recipeId }),
+      });
+      if (!res.ok) throw new Error("削除に失敗しました");
+    } catch (e) {
+      alert("サーバー側の削除に失敗しました");
     }
   };
 
@@ -321,7 +364,13 @@ export default function Calendar() {
 
           {/* カレンダー表示 */}
           {calendar4weeks ? (
-            <CalendarDisplay calendarData={calendar4weeks} isEditable={false} />
+            <CalendarDisplay
+              calendarData={calendar4weeks}
+              isEditable={false}
+              mainRecipes={mainRecipes}
+              sideRecipes={sideRecipes}
+              onRecipeDelete={handleDeleteRegisteredRecipe}
+            />
           ) : (
             <div className="text-center text-gray-400 py-8">読み込み中...</div>
           )}
@@ -347,7 +396,7 @@ export default function Calendar() {
           )}
         </div>
       </div>
-      
+
       {/* 買い物リストを中央寄せ＆カード風に改善 */}
       <div className="w-full md:w-[600px] flex justify-center items-start mt-8 md:mt-16">
         <div className="w-full max-w-md bg-white/90 rounded-xl shadow-lg p-3">

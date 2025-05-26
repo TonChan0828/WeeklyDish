@@ -25,6 +25,11 @@ interface CalendarDisplayProps {
     index: number,
     newRecipeId: string | null
   ) => void;
+  onRecipeDelete?: (
+    date: string,
+    slot: "lunch" | "dinner",
+    index: number
+  ) => void;
 }
 
 export default function CalendarDisplay({
@@ -33,6 +38,7 @@ export default function CalendarDisplay({
   mainRecipes = [],
   sideRecipes = [],
   onRecipeChange,
+  onRecipeDelete,
 }: CalendarDisplayProps) {
   // 日付をソート
   const sortedDates = Object.entries(calendarData).sort(([dateA], [dateB]) => {
@@ -41,8 +47,10 @@ export default function CalendarDisplay({
     return a.getTime() - b.getTime();
   });
 
-  // 選択中レシピのstate
-  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+  // 選択中レシピのstateを拡張してindex/日付/枠も保持
+  const [selectedRecipe, setSelectedRecipe] = useState<
+    (Recipe & { date: string; slot: "lunch" | "dinner"; index: number }) | null
+  >(null);
   const [detail, setDetail] = useState<{
     ingredients: any[];
     steps: any[];
@@ -78,7 +86,11 @@ export default function CalendarDisplay({
               onRecipeChange={(index, newRecipeId) =>
                 onRecipeChange?.(date, "lunch", index, newRecipeId)
               }
-              onRecipeClick={setSelectedRecipe}
+              onRecipeClick={(recipe, index) =>
+                setSelectedRecipe(
+                  recipe ? { ...recipe, date, slot: "lunch", index } : null
+                )
+              }
               className="text-blue-600"
             />
             <MealSection
@@ -90,7 +102,11 @@ export default function CalendarDisplay({
               onRecipeChange={(index, newRecipeId) =>
                 onRecipeChange?.(date, "dinner", index, newRecipeId)
               }
-              onRecipeClick={setSelectedRecipe}
+              onRecipeClick={(recipe, index) =>
+                setSelectedRecipe(
+                  recipe ? { ...recipe, date, slot: "dinner", index } : null
+                )
+              }
               className="text-green-600 mt-2"
             />
           </div>
@@ -106,14 +122,6 @@ export default function CalendarDisplay({
             className="relative bg-gradient-to-br from-blue-50 to-green-100 p-8 rounded-3xl shadow-2xl min-w-[320px] max-w-[95vw] w-full sm:w-[420px] border border-blue-200 flex flex-col items-center"
             onClick={(e) => e.stopPropagation()}
           >
-            <button
-              className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-blue-100 text-blue-700 text-2xl font-bold shadow hover:bg-blue-200 transition-colors border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              onClick={() => setSelectedRecipe(null)}
-              aria-label="閉じる"
-              type="button"
-            >
-              ×
-            </button>
             <h2 className="text-2xl font-extrabold mb-2 text-blue-700 drop-shadow-sm text-center">
               {selectedRecipe.title}
             </h2>
@@ -124,28 +132,60 @@ export default function CalendarDisplay({
               </span>
             </p>
             {/* ここから詳細 */}
-            {loading && <p className="text-blue-600 font-semibold">読み込み中...</p>}
+            {loading && (
+              <p className="text-blue-600 font-semibold">読み込み中...</p>
+            )}
             {detail && (
               <>
                 <h3 className="font-bold mt-4 mb-1 text-lg text-green-700 flex items-center gap-2">
-                  <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  <svg
+                    className="w-5 h-5 text-green-500"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                   材料
                 </h3>
                 <ul className="list-none ml-0 mb-4 w-full">
                   {detail.ingredients.map((ing: any) => (
-                    <li key={ing.id} className="flex items-center gap-2 py-1 border-b border-dashed border-blue-100 last:border-b-0 text-gray-700">
+                    <li
+                      key={ing.id}
+                      className="flex items-center gap-2 py-1 border-b border-dashed border-blue-100 last:border-b-0 text-gray-700"
+                    >
                       <span className="inline-block w-2 h-2 rounded-full bg-blue-400 mr-2"></span>
                       <span className="font-medium">{ing.name}</span>
-                      <span className="text-sm text-gray-500">{ing.amount}{ing.unit}</span>
-                      {ing.notes && <span className="ml-2 text-xs text-gray-400">({ing.notes})</span>}
+                      <span className="text-sm text-gray-500">
+                        {ing.amount}
+                        {ing.unit}
+                      </span>
+                      {ing.notes && (
+                        <span className="ml-2 text-xs text-gray-400">
+                          ({ing.notes})
+                        </span>
+                      )}
                     </li>
                   ))}
                 </ul>
                 <h3 className="font-bold mt-4 mb-1 text-lg text-orange-700 flex items-center gap-2">
-                  <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
+                  <svg
+                    className="w-5 h-5 text-orange-500"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 6v6l4 2"
+                    />
                   </svg>
                   手順
                 </h3>
@@ -154,12 +194,31 @@ export default function CalendarDisplay({
                     <li key={step.id} className="mb-2 text-gray-800">
                       <span className="font-medium">{step.description}</span>
                       {step.tips && (
-                        <span className="ml-2 text-xs text-gray-500">（{step.tips}）</span>
+                        <span className="ml-2 text-xs text-gray-500">
+                          （{step.tips}）
+                        </span>
                       )}
                     </li>
                   ))}
                 </ol>
               </>
+            )}
+            {/* 削除ボタン（onRecipeDeleteがあれば表示） */}
+            {onRecipeDelete && (
+              <button
+                className="my-4 px-4 py-2 rounded-full bg-red-100 text-red-700 font-bold shadow hover:bg-red-200 transition-colors border border-red-200 focus:outline-none focus:ring-2 focus:ring-red-400"
+                onClick={() => {
+                  onRecipeDelete(
+                    selectedRecipe.date,
+                    selectedRecipe.slot,
+                    selectedRecipe.index
+                  );
+                  setSelectedRecipe(null);
+                }}
+                type="button"
+              >
+                このメニューの登録を削除
+              </button>
             )}
           </div>
         </div>
@@ -176,7 +235,7 @@ interface MealSectionProps {
   mainRecipes: Recipe[];
   sideRecipes: Recipe[];
   onRecipeChange: (index: number, newRecipeId: string | null) => void;
-  onRecipeClick?: (recipe: Recipe) => void; // 追加
+  onRecipeClick?: (recipe: Recipe | null, index: number) => void; // 追加
   className?: string;
 }
 
@@ -189,7 +248,9 @@ function MealSection({
   onRecipeChange,
   onRecipeClick,
   className,
-}: MealSectionProps) {
+}: MealSectionProps & {
+  onRecipeClick?: (recipe: Recipe | null, index: number) => void;
+}) {
   return (
     <div>
       <h3 className={`font-semibold ${className}`}>{title}</h3>
@@ -198,7 +259,7 @@ function MealSection({
           <li
             key={`${title}-${i}`}
             className={`text-gray-700 ${!isEditable ? "cursor-pointer hover:underline" : ""}`}
-            onClick={() => !isEditable && recipe && onRecipeClick?.(recipe)}
+            onClick={() => !isEditable && onRecipeClick?.(recipe, i)}
           >
             {isEditable ? (
               <select
@@ -207,8 +268,8 @@ function MealSection({
                 className="border rounded px-2 w-full"
               >
                 <option value="">（選択しない）</option>
-                {/* recipeがnullの場合はmainRecipesをデフォルトで表示 */}
-                {((recipe && recipe.type === "main") || (!recipe && title === "昼食"))
+                {(recipe && recipe.type === "main") ||
+                (!recipe && title === "昼食")
                   ? mainRecipes.map((r) => (
                       <option key={r.id} value={r.id}>
                         {r.title}
@@ -220,8 +281,10 @@ function MealSection({
                       </option>
                     ))}
               </select>
+            ) : recipe ? (
+              recipe.title
             ) : (
-              recipe ? recipe.title : <span className="text-gray-400">（選択なし）</span>
+              <span className="text-gray-400">（選択なし）</span>
             )}
           </li>
         ))}

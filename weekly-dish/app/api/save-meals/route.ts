@@ -68,3 +68,39 @@ export async function POST(request: Request) {
     );
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const { date, time_slot, recipe_id } = await request.json();
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: "未認証" }, { status: 401 });
+
+    // meal_entriesから該当レコードを削除
+    const { error } = await supabase
+      .from("meal_entries")
+      .delete()
+      .match({
+        user_id: user.id,
+        date,
+        time_slot,
+        recipe_id,
+      });
+
+    if (error) {
+      console.error("削除エラー:", error);
+      return NextResponse.json(
+        { error: "献立の削除に失敗しました" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("削除エラー:", error);
+    return NextResponse.json(
+      { error: "献立の削除に失敗しました" },
+      { status: 500 }
+    );
+  }
+}
