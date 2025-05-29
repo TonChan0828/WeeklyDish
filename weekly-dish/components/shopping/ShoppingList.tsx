@@ -74,28 +74,30 @@ export default function ShoppingList() {
       {loading && <p className="text-blue-600 font-semibold">読み込み中...</p>}
       {error && <p className="text-red-500 font-semibold">{error}</p>}
       {list && (
-        <div className="overflow-x-auto mt-6 rounded-xl shadow border border-blue-200 bg-white/95">
+        <div className="overflow-x-auto mt-6 rounded-3xl shadow-2xl border border-blue-200 bg-gradient-to-br from-white/95 to-green-50/80 backdrop-blur-md">
           <table className="w-full text-base">
             <thead>
-              <tr className="bg-blue-100 text-blue-700">
-                <th className="border px-4 py-3">材料名</th>
-                <th className="border px-4 py-3">合計量</th>
+              <tr className="bg-gradient-to-r from-blue-100/80 to-green-100/80 text-blue-700 text-lg">
+                <th className="border-b px-6 py-4 font-bold text-left rounded-tl-2xl">
+                  材料名
+                </th>
+                <th className="border-b px-6 py-4 font-bold text-right rounded-tr-2xl">
+                  合計量
+                </th>
               </tr>
             </thead>
             <tbody>
               {list.map((item, i) => (
                 <tr
-                  key={item.name + (item.unit || "") + i}
-                  className="hover:bg-blue-50"
+                  key={item.name + i}
+                  className="hover:bg-blue-50/60 transition group"
                 >
-                  <td className="border px-4 py-3 font-medium text-gray-800">
+                  <td className="border-b px-6 py-4 font-semibold text-gray-800 group-hover:text-blue-700 text-lg tracking-wide">
+                    <span className="inline-block w-2 h-2 rounded-full bg-gradient-to-r from-blue-400 to-green-400 mr-2 align-middle"></span>
                     {item.name}
                   </td>
-                  <td className="border px-4 py-3 text-right">
-                    {/* amount/unitが空ならamount_textを表示 */}
-                    {!item.total_amount && !item.unit && item.amount_text
-                      ? item.amount_text
-                      : `${item.total_amount ?? ""}${item.unit ?? ""}`}
+                  <td className="border-b px-6 py-4 text-right text-blue-600 font-bold text-lg">
+                    {item.total_amount_text || item.total_amount || "-"}
                   </td>
                 </tr>
               ))}
