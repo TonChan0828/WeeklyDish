@@ -80,22 +80,23 @@ export default function ShoppingList() {
               <tr className="bg-blue-100 text-blue-700">
                 <th className="border px-4 py-3">材料名</th>
                 <th className="border px-4 py-3">合計量</th>
-                <th className="border px-4 py-3">単位</th>
               </tr>
             </thead>
             <tbody>
               {list.map((item, i) => (
                 <tr
-                  key={item.name + item.unit + i}
+                  key={item.name + (item.unit || "") + i}
                   className="hover:bg-blue-50"
                 >
                   <td className="border px-4 py-3 font-medium text-gray-800">
                     {item.name}
                   </td>
                   <td className="border px-4 py-3 text-right">
-                    {item.total_amount}
+                    {/* amount/unitが空ならamount_textを表示 */}
+                    {!item.total_amount && !item.unit && item.amount_text
+                      ? item.amount_text
+                      : `${item.total_amount ?? ""}${item.unit ?? ""}`}
                   </td>
-                  <td className="border px-4 py-3 text-center">{item.unit}</td>
                 </tr>
               ))}
             </tbody>

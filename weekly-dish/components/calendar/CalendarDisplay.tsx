@@ -162,8 +162,10 @@ export default function CalendarDisplay({
                       <span className="inline-block w-2 h-2 rounded-full bg-blue-400 mr-2"></span>
                       <span className="font-medium">{ing.name}</span>
                       <span className="text-sm text-gray-500">
-                        {ing.amount}
-                        {ing.unit}
+                        {/* amount/unitが空ならamount_textを表示 */}
+                        {!ing.amount && !ing.unit && ing.amount_text
+                          ? ing.amount_text
+                          : `${ing.amount ?? ""}${ing.unit ?? ""}`}
                       </span>
                       {ing.notes && (
                         <span className="ml-2 text-xs text-gray-400">
