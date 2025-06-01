@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+　import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   FaSignOutAlt,
@@ -7,9 +7,11 @@ import {
   FaCalendarAlt,
   FaShoppingCart,
 } from "react-icons/fa";
+import { useRouter } from "next/navigation";
 
 export default function Header() {
   const [isSignedIn, setIsSignedIn] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     // サインイン状態をAPI経由で判定
@@ -22,12 +24,13 @@ export default function Header() {
     <header className="bg-gray-800 text-gray-300">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         {/* ロゴ／タイトル */}
-        <Link
-          href="/calendar"
-          className="text-2xl font-bold hover:text-white transition"
+        <button
+          onClick={() => router.push(isSignedIn ? "/calendar" : "/")}
+          className="text-2xl font-bold hover:text-white transition bg-transparent border-none cursor-pointer"
+          style={{ outline: "none" }}
         >
           WeeklyDish
-        </Link>
+        </button>
         {/* ナビリンク */}
         <nav className="hidden md:flex items-center space-x-6">
           <Link
