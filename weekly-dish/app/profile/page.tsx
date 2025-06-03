@@ -53,6 +53,33 @@ export default function Profile() {
     }
   };
 
+  // ユーザー削除処理
+  const handleDelete = async () => {
+    if (
+      !window.confirm(
+        "本当にユーザー情報を削除しますか？この操作は元に戻せません。"
+      )
+    )
+      return;
+    setLoading(true);
+    setError("");
+    setSuccess("");
+    try {
+      const res = await fetch("/api/profile", {
+        method: "DELETE",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!res.ok) throw new Error("ユーザー削除に失敗しました");
+      // 削除成功時はサインアウトページへ遷移
+      window.location.href = "/sign-out";
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">
       <h1 className="text-2xl font-bold mb-4">Profile Page</h1>
@@ -76,6 +103,14 @@ export default function Profile() {
             disabled={loading}
           >
             保存
+          </button>
+          <button
+            type="button"
+            className="bg-red-600 text-white py-2 rounded hover:bg-red-700 mt-2"
+            onClick={handleDelete}
+            disabled={loading}
+          >
+            ユーザー削除
           </button>
         </form>
       )}
