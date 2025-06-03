@@ -1,5 +1,5 @@
 "use client";
-　import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   FaSignOutAlt,
@@ -10,7 +10,8 @@ import {
 import { useRouter } from "next/navigation";
 
 export default function Header() {
-  const [isSignedIn, setIsSignedIn] = useState(false);
+  // 初期値をundefinedにしてサーバー/クライアントの描画差異を防ぐ
+  const [isSignedIn, setIsSignedIn] = useState<boolean | undefined>(undefined);
   const router = useRouter();
 
   useEffect(() => {
@@ -25,9 +26,13 @@ export default function Header() {
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         {/* ロゴ／タイトル */}
         <button
-          onClick={() => router.push(isSignedIn ? "/calendar" : "/")}
+          onClick={() => {
+            if (isSignedIn === undefined) return; // 判定前は何もしない
+            router.push(isSignedIn ? "/calendar" : "/");
+          }}
           className="text-2xl font-bold hover:text-white transition bg-transparent border-none cursor-pointer"
           style={{ outline: "none" }}
+          disabled={isSignedIn === undefined}
         >
           WeeklyDish
         </button>
