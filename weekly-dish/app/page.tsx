@@ -2,8 +2,17 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-orange-100 via-pink-100 to-yellow-100">
-      <div className="bg-white/80 rounded-3xl shadow-2xl p-10 flex flex-col items-center max-w-xl w-full">
+    <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
+      {/* 背景画像 */}
+      <div
+        className="absolute inset-0 w-full h-full bg-center bg-cover z-0"
+        style={{ backgroundImage: 'url("/top.png")', opacity: 1 }}
+        aria-hidden="true"
+      />
+      {/* グラデーションオーバーレイ */}
+      <div className="absolute inset-0 bg-gradient-to-br from-orange-100 via-pink-100 to-yellow-100 z-10 opacity-80" />
+      {/* メインコンテンツ */}
+      <div className="relative z-20 bg-white/80 rounded-3xl shadow-2xl p-10 flex flex-col items-center max-w-xl w-full">
         <h1 className="text-5xl font-extrabold text-orange-500 mb-4 drop-shadow-lg tracking-tight">
           Weekly Dish
         </h1>
