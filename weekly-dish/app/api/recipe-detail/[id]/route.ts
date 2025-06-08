@@ -1,8 +1,12 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
-// context.params.id で取得
-export async function GET(request: Request, context: { params: { id: string } }) {
+// Next.js App RouterのAPI RouteのGETは(request: Request, context: { params: { id: string } }) ではなく
+// (request: Request & { params: { id: string } }) のように1引数で受ける必要がある
+export async function GET(
+  request: Request,
+  context: { params: Promise<{ id: string }> }
+) {
   const supabase = await createClient();
   const { id: recipeId } = await context.params;
 
