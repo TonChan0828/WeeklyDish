@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 
-export default function Login({ searchParams }: { searchParams: Message }) {
+export default async function Login({ searchParams }: { searchParams: Promise<Message> }) {
+  const params = await searchParams;
   return (
     <div className="fixed inset-0 flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
       <form className="w-full max-w-md bg-white/90 rounded-2xl shadow-xl p-8">
@@ -44,7 +45,7 @@ export default function Login({ searchParams }: { searchParams: Message }) {
           <SubmitButton pendingText="Signing In..." formAction={signInAction}>
             Sign in
           </SubmitButton>
-          <FormMessage message={searchParams} />
+          <FormMessage message={params} />
         </div>
       </form>
     </div>
