@@ -9,9 +9,8 @@ import { SmtpMessage } from "../smtp-message";
 export default async function ForgotPassword({
   searchParams,
 }: {
-  searchParams: any; // 型をanyまたは適切な型に
+  searchParams: Promise<Message>;
 }) {
-  // searchParamsをawaitしてオブジェクトとして扱う
   const params = await searchParams;
 
   return (
