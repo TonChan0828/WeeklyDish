@@ -2,12 +2,18 @@ import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
-  // The `/auth/callback` route is required for the server-side auth flow implemented
-  // by the SSR package. It exchanges an auth code for the user's session.
-  // https://supabase.com/docs/guides/auth/server-side/nextjs
+  // Vercel本番環境対応: originをX-Forwarded-HostやVERCEL_URLから取得
   const requestUrl = new URL(request.url);
+  let origin = requestUrl.origin;
+  // X-Forwarded-Hostがあれば優先
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  if (forwardedHost) {
+    origin = `${requestUrl.protocol}//${forwardedHost}`;
+  } else if (process.env.VERCEL_URL) {
+    origin = `https://${process.env.VERCEL_URL}`;
+  }
+
   const code = requestUrl.searchParams.get("code");
-  const origin = requestUrl.origin;
   const redirectTo = requestUrl.searchParams.get("redirect_to")?.toString();
 
   if (code) {
