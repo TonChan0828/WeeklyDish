@@ -6,7 +6,14 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { SmtpMessage } from "../smtp-message";
 
-export default function ForgotPassword({ searchParams }: { searchParams: Message }) {
+export default async function ForgotPassword({
+  searchParams,
+}: {
+  searchParams: any; // 型をanyまたは適切な型に
+}) {
+  // searchParamsをawaitしてオブジェクトとして扱う
+  const params = await searchParams;
+
   return (
     <div className="fixed inset-0 flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
       <form className="w-full max-w-md bg-white/90 rounded-2xl shadow-xl p-8">
@@ -30,7 +37,7 @@ export default function ForgotPassword({ searchParams }: { searchParams: Message
           <SubmitButton formAction={forgotPasswordAction}>
             Reset Password
           </SubmitButton>
-          <FormMessage message={searchParams} />
+          <FormMessage message={params} />
         </div>
       </form>
       <SmtpMessage />
