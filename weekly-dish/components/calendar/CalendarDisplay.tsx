@@ -25,6 +25,7 @@ interface CalendarDisplayProps {
     index: number,
     newRecipeId: string
   ) => void;
+  onRecipeDelete?: (date: string, slot: "lunch" | "dinner", index: number) => void;
 }
 
 export default function CalendarDisplay({
@@ -33,6 +34,7 @@ export default function CalendarDisplay({
   mainRecipes = [],
   sideRecipes = [],
   onRecipeChange,
+  onRecipeDelete,
 }: CalendarDisplayProps) {
   // 日付をソート
   const sortedDates = Object.entries(calendarData).sort(([dateA], [dateB]) => {
@@ -78,7 +80,7 @@ export default function CalendarDisplay({
               onRecipeChange={(index, newRecipeId) =>
                 onRecipeChange?.(date, "lunch", index, newRecipeId)
               }
-              onRecipeClick={setSelectedRecipe}
+              onRecipeDelete={onRecipeDelete ? (index) => onRecipeDelete(date, "lunch", index) : undefined}
               className="text-orange-600"
             />
             <MealSection
@@ -90,7 +92,7 @@ export default function CalendarDisplay({
               onRecipeChange={(index, newRecipeId) =>
                 onRecipeChange?.(date, "dinner", index, newRecipeId)
               }
-              onRecipeClick={setSelectedRecipe}
+              onRecipeDelete={onRecipeDelete ? (index) => onRecipeDelete(date, "dinner", index) : undefined}
               className="text-green-600 mt-2"
             />
           </div>
@@ -153,7 +155,8 @@ interface MealSectionProps {
   mainRecipes: Recipe[];
   sideRecipes: Recipe[];
   onRecipeChange: (index: number, newRecipeId: string) => void;
-  onRecipeClick?: (recipe: Recipe) => void; // 追加
+  onRecipeClick?: (recipe: Recipe) => void;
+  onRecipeDelete?: (index: number) => void;
   className?: string;
 }
 
@@ -165,6 +168,7 @@ function MealSection({
   sideRecipes,
   onRecipeChange,
   onRecipeClick,
+  onRecipeDelete,
   className,
 }: MealSectionProps) {
   return (
@@ -192,7 +196,21 @@ function MealSection({
                 )}
               </select>
             ) : (
-              recipe.title
+              <span className="inline-flex items-center gap-2">
+                {recipe.title}
+                {onRecipeDelete && (
+                  <button
+                    type="button"
+                    className="ml-2 text-xs text-red-500 hover:underline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRecipeDelete(i);
+                    }}
+                  >
+                    削除
+                  </button>
+                )}
+              </span>
             )}
           </li>
         ))}
