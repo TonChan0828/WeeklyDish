@@ -59,6 +59,12 @@ export default function Header() {
             <FaShoppingCart />
             <span>買い物リスト</span>
           </Link>
+          <Link
+            href="/recipes"
+            className="flex items-center space-x-1 hover:text-white transition"
+          >
+            <span>レシピ一覧</span>
+          </Link>
           {isSignedIn && (
             <Link href="/sign-out" className="text-white ml-4">
               Sign Out
