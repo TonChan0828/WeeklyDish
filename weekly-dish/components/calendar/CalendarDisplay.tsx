@@ -23,12 +23,7 @@ interface CalendarDisplayProps {
     date: string,
     slot: "lunch" | "dinner",
     index: number,
-    newRecipeId: string | null
-  ) => void;
-  onRecipeDelete?: (
-    date: string,
-    slot: "lunch" | "dinner",
-    index: number
+    newRecipeId: string
   ) => void;
 }
 
@@ -38,7 +33,6 @@ export default function CalendarDisplay({
   mainRecipes = [],
   sideRecipes = [],
   onRecipeChange,
-  onRecipeDelete,
 }: CalendarDisplayProps) {
   // 日付をソート
   const sortedDates = Object.entries(calendarData).sort(([dateA], [dateB]) => {
@@ -47,10 +41,8 @@ export default function CalendarDisplay({
     return a.getTime() - b.getTime();
   });
 
-  // 選択中レシピのstateを拡張してindex/日付/枠も保持
-  const [selectedRecipe, setSelectedRecipe] = useState<
-    (Recipe & { date: string; slot: "lunch" | "dinner"; index: number }) | null
-  >(null);
+  // 選択中レシピのstate
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [detail, setDetail] = useState<{
     ingredients: any[];
     steps: any[];
@@ -86,12 +78,8 @@ export default function CalendarDisplay({
               onRecipeChange={(index, newRecipeId) =>
                 onRecipeChange?.(date, "lunch", index, newRecipeId)
               }
-              onRecipeClick={(recipe, index) =>
-                setSelectedRecipe(
-                  recipe ? { ...recipe, date, slot: "lunch", index } : null
-                )
-              }
-              className="text-blue-600"
+              onRecipeClick={setSelectedRecipe}
+              className="text-orange-600"
             />
             <MealSection
               title="夕食"
@@ -102,11 +90,7 @@ export default function CalendarDisplay({
               onRecipeChange={(index, newRecipeId) =>
                 onRecipeChange?.(date, "dinner", index, newRecipeId)
               }
-              onRecipeClick={(recipe, index) =>
-                setSelectedRecipe(
-                  recipe ? { ...recipe, date, slot: "dinner", index } : null
-                )
-              }
+              onRecipeClick={setSelectedRecipe}
               className="text-green-600 mt-2"
             />
           </div>
@@ -114,89 +98,38 @@ export default function CalendarDisplay({
       </div>
       {/* モーダル表示 */}
       {selectedRecipe && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50"
-          onClick={() => setSelectedRecipe(null)}
-        >
-          <div
-            className="relative bg-gradient-to-br from-blue-50 to-green-100 p-8 rounded-3xl shadow-2xl min-w-[320px] max-w-[95vw] w-full sm:w-[420px] border border-blue-200 flex flex-col items-center"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="text-2xl font-extrabold mb-2 text-blue-700 drop-shadow-sm text-center">
-              {selectedRecipe.title}
-            </h2>
-            <p className="mb-3 text-base text-blue-500 font-semibold text-center">
-              種類:{" "}
-              <span className="inline-block px-2 py-1 rounded bg-blue-200/60 text-blue-800 text-sm font-bold">
-                {selectedRecipe.type === "main" ? "主菜" : "副菜"}
-              </span>
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded shadow-lg min-w-[300px] max-w-[90vw] relative">
+            <button
+              className="absolute top-2 right-4 text-2xl"
+              onClick={() => setSelectedRecipe(null)}
+            >
+              ×
+            </button>
+            <h2 className="text-xl font-bold mb-2">{selectedRecipe.title}</h2>
+            <p className="mb-1">
+              種類: {selectedRecipe.type === "main" ? "主菜" : "副菜"}
             </p>
             {/* ここから詳細 */}
-            {loading && (
-              <p className="text-blue-600 font-semibold">読み込み中...</p>
-            )}
+            {loading && <p>読み込み中...</p>}
             {detail && (
               <>
-                <h3 className="font-bold mt-4 mb-1 text-lg text-green-700 flex items-center gap-2">
-                  <svg
-                    className="w-5 h-5 text-green-500"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  材料
-                </h3>
-                <ul className="list-none ml-0 mb-4 w-full">
+                <h3 className="font-bold mt-4">材料</h3>
+                <ul className="list-disc ml-5">
                   {detail.ingredients.map((ing: any) => (
-                    <li
-                      key={ing.id}
-                      className="flex items-center gap-2 py-1 border-b border-dashed border-blue-100 last:border-b-0 text-gray-700"
-                    >
-                      <span className="inline-block w-2 h-2 rounded-full bg-blue-400 mr-2"></span>
-                      <span className="font-medium">{ing.name}</span>
-                      <span className="text-sm text-gray-500">
-                        {/* amount/unitが空ならamount_textを表示 */}
-                        {!ing.amount && !ing.unit && ing.amount_text
-                          ? ing.amount_text
-                          : `${ing.amount ?? ""}${ing.unit ?? ""}`}
-                      </span>
-                      {ing.notes && (
-                        <span className="ml-2 text-xs text-gray-400">
-                          ({ing.notes})
-                        </span>
-                      )}
+                    <li key={ing.id}>
+                      {ing.name} {ing.amount}
+                      {ing.unit} {ing.notes && `(${ing.notes})`}
                     </li>
                   ))}
                 </ul>
-                <h3 className="font-bold mt-4 mb-1 text-lg text-orange-700 flex items-center gap-2">
-                  <svg
-                    className="w-5 h-5 text-orange-500"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 6v6l4 2"
-                    />
-                  </svg>
-                  手順
-                </h3>
-                <ol className="list-decimal ml-5 w-full">
+                <h3 className="font-bold mt-4">手順</h3>
+                <ol className="list-decimal ml-5">
                   {detail.steps.map((step: any) => (
-                    <li key={step.id} className="mb-2 text-gray-800">
-                      <span className="font-medium">{step.description}</span>
+                    <li key={step.id}>
+                      {step.description}
                       {step.tips && (
-                        <span className="ml-2 text-xs text-gray-500">
+                        <span className="text-xs text-gray-500">
                           （{step.tips}）
                         </span>
                       )}
@@ -204,23 +137,6 @@ export default function CalendarDisplay({
                   ))}
                 </ol>
               </>
-            )}
-            {/* 削除ボタン（onRecipeDeleteがあれば表示） */}
-            {onRecipeDelete && (
-              <button
-                className="my-4 px-4 py-2 rounded-full bg-red-100 text-red-700 font-bold shadow hover:bg-red-200 transition-colors border border-red-200 focus:outline-none focus:ring-2 focus:ring-red-400"
-                onClick={() => {
-                  onRecipeDelete(
-                    selectedRecipe.date,
-                    selectedRecipe.slot,
-                    selectedRecipe.index
-                  );
-                  setSelectedRecipe(null);
-                }}
-                type="button"
-              >
-                このメニューの登録を削除
-              </button>
             )}
           </div>
         </div>
@@ -236,8 +152,8 @@ interface MealSectionProps {
   isEditable: boolean;
   mainRecipes: Recipe[];
   sideRecipes: Recipe[];
-  onRecipeChange: (index: number, newRecipeId: string | null) => void;
-  onRecipeClick?: (recipe: Recipe | null, index: number) => void; // 追加
+  onRecipeChange: (index: number, newRecipeId: string) => void;
+  onRecipeClick?: (recipe: Recipe) => void; // 追加
   className?: string;
 }
 
@@ -250,9 +166,7 @@ function MealSection({
   onRecipeChange,
   onRecipeClick,
   className,
-}: MealSectionProps & {
-  onRecipeClick?: (recipe: Recipe | null, index: number) => void;
-}) {
+}: MealSectionProps) {
   return (
     <div>
       <h3 className={`font-semibold ${className}`}>{title}</h3>
@@ -261,32 +175,24 @@ function MealSection({
           <li
             key={`${title}-${i}`}
             className={`text-gray-700 ${!isEditable ? "cursor-pointer hover:underline" : ""}`}
-            onClick={() => !isEditable && onRecipeClick?.(recipe, i)}
+            onClick={() => !isEditable && onRecipeClick?.(recipe)}
           >
             {isEditable ? (
               <select
-                value={recipe ? recipe.id : ""}
-                onChange={(e) => onRecipeChange(i, e.target.value || null)}
+                value={recipe.id}
+                onChange={(e) => onRecipeChange(i, e.target.value)}
                 className="border rounded px-2 w-full"
               >
-                <option value="">（選択しない）</option>
-                {(recipe && recipe.type === "main") ||
-                (!recipe && title === "昼食")
-                  ? mainRecipes.map((r) => (
-                      <option key={r.id} value={r.id}>
-                        {r.title}
-                      </option>
-                    ))
-                  : sideRecipes.map((r) => (
-                      <option key={r.id} value={r.id}>
-                        {r.title}
-                      </option>
-                    ))}
+                {(recipe.type === "main" ? mainRecipes : sideRecipes).map(
+                  (r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.title}
+                    </option>
+                  )
+                )}
               </select>
-            ) : recipe ? (
-              recipe.title
             ) : (
-              <span className="text-gray-400">（選択なし）</span>
+              recipe.title
             )}
           </li>
         ))}

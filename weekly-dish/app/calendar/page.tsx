@@ -229,31 +229,33 @@ export default function Calendar() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row gap-8 bg-gradient-to-br from-blue-50 to-white min-h-screen">
+    <div className="flex flex-col md:flex-row gap-8 bg-gradient-to-br from-orange-50 to-yellow-100 min-h-screen">
       <div className="flex-auto">
-        <div className="container mx-auto p-6 rounded-xl shadow-lg bg-white/90 mt-8">
+        <div className="container mx-auto p-6 rounded-3xl shadow-2xl bg-white/90 mt-8">
           <h1
-            className="text-3xl font-extrabold mb-6 text-blue-700 flex items-center gap-2 drop-shadow-sm cursor-pointer hover:text-blue-500 transition"
+            className="text-3xl font-extrabold mb-6 text-orange-600 flex items-center gap-2 drop-shadow-lg cursor-pointer hover:text-orange-500 transition"
             onClick={() => router.push("/calendar")}
           >
-            <span className="inline-block bg-blue-100 text-blue-700 rounded-full px-3 py-1 text-sm font-semibold mr-2">
+            <span className="inline-block bg-orange-100 text-orange-700 rounded-full px-3 py-1 text-sm font-semibold mr-2">
               WEEKLY
             </span>
             週間献立カレンダー
           </h1>
 
           {/* 日付範囲の選択を追加 */}
-          <div className="mb-6 p-6 border border-blue-100 rounded-lg bg-blue-50/60 shadow-sm">
-            <h2 className="font-semibold mb-3 text-blue-700">日付範囲を選択</h2>
+          <div className="mb-6 p-6 border border-orange-100 rounded-2xl bg-orange-50/60 shadow-sm">
+            <h2 className="font-semibold mb-3 text-orange-700">
+              日付範囲を選択
+            </h2>
             <div className="flex gap-4 items-center">
               <div>
-                <label className="block text-sm mb-1 text-blue-800">
+                <label className="block text-sm mb-1 text-orange-800">
                   開始日
                 </label>
                 <select
                   value={startDate}
                   onChange={(e) => handleStartDateChange(e.target.value)}
-                  className="border rounded px-2 py-1 focus:ring-2 focus:ring-blue-300"
+                  className="border rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-300 bg-white shadow"
                 >
                   {generateDateOptions(startDate, 30).map((option) => (
                     <option key={option.value} value={option.value}>
@@ -262,15 +264,15 @@ export default function Calendar() {
                   ))}
                 </select>
               </div>
-              <span className="text-lg text-blue-600">〜</span>
+              <span className="text-lg text-orange-600">〜</span>
               <div>
-                <label className="block text-sm mb-1 text-blue-800">
+                <label className="block text-sm mb-1 text-orange-800">
                   終了日
                 </label>
                 <select
                   value={endDate}
                   onChange={(e) => handleEndDateChange(e.target.value)}
-                  className="border rounded px-2 py-1 focus:ring-2 focus:ring-blue-300"
+                  className="border rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-300 bg-white shadow"
                 >
                   {generateDateOptions(startDate, 30).map((option) => (
                     <option key={option.value} value={option.value}>
@@ -283,14 +285,14 @@ export default function Calendar() {
           </div>
 
           {/* 週の開始曜日選択 */}
-          <div className="mb-6 p-6 border border-blue-100 rounded-lg bg-blue-50/60 shadow-sm">
-            <h2 className="font-semibold mb-3 text-blue-700">
+          <div className="mb-6 p-6 border border-orange-100 rounded-2xl bg-orange-50/60 shadow-sm">
+            <h2 className="font-semibold mb-3 text-orange-700">
               週の開始曜日を選択
             </h2>
             <select
               value={weekStartsOn}
               onChange={(e) => setWeekStartsOn(Number(e.target.value))}
-              className="border rounded px-2 py-1 focus:ring-2 focus:ring-blue-300"
+              className="border rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-300 bg-white shadow"
             >
               {weekStartOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -301,13 +303,13 @@ export default function Calendar() {
           </div>
 
           {/* 主菜・副菜の数指定 */}
-          <div className="mb-6 p-6 border border-blue-100 rounded-lg bg-blue-50/60 shadow-sm">
-            <h2 className="font-semibold mb-3 text-blue-700">
+          <div className="mb-6 p-6 border border-orange-100 rounded-2xl bg-orange-50/60 shadow-sm">
+            <h2 className="font-semibold mb-3 text-orange-700">
               主菜・副菜の数を指定
             </h2>
             <div className="flex gap-8">
               <div>
-                <h3 className="font-bold text-blue-600 mb-2">昼食</h3>
+                <h3 className="font-bold text-orange-600 mb-2">昼食</h3>
                 <label className="block mb-2">
                   主菜:
                   <input
@@ -315,7 +317,7 @@ export default function Calendar() {
                     min={0}
                     value={lunchMain}
                     onChange={(e) => setLunchMain(Number(e.target.value))}
-                    className="border ml-2 w-12 rounded focus:ring-2 focus:ring-blue-300"
+                    className="border ml-2 w-12 rounded-lg focus:ring-2 focus:ring-orange-300"
                   />
                 </label>
                 <label className="block">
@@ -325,7 +327,7 @@ export default function Calendar() {
                     min={0}
                     value={lunchSide}
                     onChange={(e) => setLunchSide(Number(e.target.value))}
-                    className="border ml-2 w-12 rounded focus:ring-2 focus:ring-blue-300"
+                    className="border ml-2 w-12 rounded-lg focus:ring-2 focus:ring-orange-300"
                   />
                 </label>
               </div>
@@ -338,7 +340,7 @@ export default function Calendar() {
                     min={0}
                     value={dinnerMain}
                     onChange={(e) => setDinnerMain(Number(e.target.value))}
-                    className="border ml-2 w-12 rounded focus:ring-2 focus:ring-green-300"
+                    className="border ml-2 w-12 rounded-lg focus:ring-2 focus:ring-green-300"
                   />
                 </label>
                 <label className="block">
@@ -348,7 +350,7 @@ export default function Calendar() {
                     min={0}
                     value={dinnerSide}
                     onChange={(e) => setDinnerSide(Number(e.target.value))}
-                    className="border ml-2 w-12 rounded focus:ring-2 focus:ring-green-300"
+                    className="border ml-2 w-12 rounded-lg focus:ring-2 focus:ring-green-300"
                   />
                 </label>
               </div>
@@ -356,7 +358,7 @@ export default function Calendar() {
             <button
               onClick={handleGenerateMeals}
               disabled={loading}
-              className="mt-6 bg-gradient-to-r from-blue-400 to-green-400 text-white px-6 py-2 rounded-lg shadow hover:from-blue-500 hover:to-green-500 transition disabled:bg-gray-400 disabled:from-gray-400 disabled:to-gray-400"
+              className="mt-6 bg-gradient-to-r from-orange-400 to-yellow-400 text-white px-6 py-2 rounded-lg shadow hover:from-orange-500 hover:to-yellow-500 transition disabled:bg-gray-400 disabled:from-gray-400 disabled:to-gray-400 font-bold text-lg"
             >
               {loading ? "生成中..." : "献立を生成"}
             </button>
@@ -387,7 +389,7 @@ export default function Calendar() {
               <div className="mt-8 flex justify-center">
                 <button
                   onClick={handleSaveMeals}
-                  className="bg-gradient-to-r from-green-400 to-blue-400 text-white px-8 py-3 rounded-lg shadow hover:from-green-500 hover:to-blue-500 transition"
+                  className="bg-gradient-to-r from-green-400 to-orange-400 text-white px-8 py-3 rounded-lg shadow hover:from-green-500 hover:to-orange-500 transition font-bold text-lg"
                 >
                   この献立を登録する
                 </button>
@@ -399,12 +401,12 @@ export default function Calendar() {
 
       {/* 買い物リストを中央寄せ＆カード風に改善 */}
       <div className="w-full md:w-[600px] flex justify-center items-start mt-8 md:mt-16">
-        <div className="w-full max-w-md bg-white/90 rounded-xl shadow-lg p-3">
-          <h2 className="text-xl font-bold mb-4 text-blue-700 flex items-center gap-2">
-            <span className="inline-block bg-blue-100 rounded-full p-2">
+        <div className="w-full max-w-md bg-white/90 rounded-2xl shadow-lg p-3">
+          <h2 className="text-xl font-bold mb-4 text-orange-700 flex items-center gap-2">
+            <span className="inline-block bg-orange-100 rounded-full p-2">
               <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
                 <path
-                  fill="#2563eb"
+                  fill="#fb923c"
                   d="M7 18a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H7Zm0 0v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1"
                 />
               </svg>

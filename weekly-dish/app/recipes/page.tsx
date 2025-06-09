@@ -43,13 +43,15 @@ function RecipesPageClient() {
 
   return (
     <div className="max-w-3xl mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-6 text-center">レシピ一覧</h1>
-      <div className="bg-white rounded-xl shadow p-6">
+      <h1 className="text-3xl font-extrabold mb-8 text-center text-orange-600 drop-shadow-lg tracking-tight">
+        レシピ一覧
+      </h1>
+      <div className="bg-gradient-to-br from-orange-50 to-yellow-100 rounded-3xl shadow-2xl p-8">
         <table className="w-full text-left border-separate border-spacing-y-2">
           <thead>
             <tr>
-              <th className="px-5 py-2 text-gray-600">レシピ名</th>
-              <th className="px-5 py-2 text-gray-600">主菜/副菜</th>
+              <th className="px-5 py-2 text-orange-700 font-bold text-lg">レシピ名</th>
+              <th className="px-5 py-2 text-orange-700 font-bold text-lg">主菜/副菜</th>
             </tr>
           </thead>
           <tbody>
@@ -57,18 +59,19 @@ function RecipesPageClient() {
               recipes.map((recipe: Recipe) => (
                 <tr
                   key={recipe.id}
-                  className="hover:bg-orange-50 transition cursor-pointer"
+                  className="hover:bg-orange-100/60 transition cursor-pointer rounded-xl shadow-sm"
                   onClick={() => setSelectedRecipe(recipe)}
+                  style={{ borderRadius: "1rem" }}
                 >
-                  <td className="px-4 py-2 font-medium text-orange-700 underline">
+                  <td className="px-4 py-3 font-semibold text-orange-700 underline text-lg rounded-l-xl">
                     {recipe.title}
                   </td>
-                  <td className="px-4 py-2">
+                  <td className="px-4 py-3 rounded-r-xl">
                     <span
                       className={
                         recipe.type === "main"
-                          ? "bg-orange-200 text-orange-800 px-3 py-1 rounded-full text-xs font-bold"
-                          : "bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold"
+                          ? "bg-orange-200 text-orange-800 px-4 py-1 rounded-full text-sm font-bold shadow"
+                          : "bg-blue-100 text-blue-700 px-4 py-1 rounded-full text-sm font-bold shadow"
                       }
                     >
                       {recipe.type === "main" ? "主菜" : "副菜"}
