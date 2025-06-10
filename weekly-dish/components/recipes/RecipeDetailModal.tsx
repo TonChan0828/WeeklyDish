@@ -18,11 +18,13 @@ interface RecipeDetail {
 interface RecipeDetailModalProps {
   recipe: { id: string; title: string; type: "main" | "side" } | null;
   onClose: () => void;
+  onDelete?: () => void;
 }
 
 export default function RecipeDetailModal({
   recipe,
   onClose,
+  onDelete,
 }: RecipeDetailModalProps) {
   const [detail, setDetail] = useState<RecipeDetail | null>(null);
   const [loading, setLoading] = useState(false);
@@ -120,6 +122,15 @@ export default function RecipeDetailModal({
               ))}
             </ol>
           </>
+        )}
+        {onDelete && (
+          <button
+            type="button"
+            className="mt-6 bg-red-500 text-white px-4 py-2 rounded shadow hover:bg-red-600"
+            onClick={onDelete}
+          >
+            この献立から削除
+          </button>
         )}
       </div>
     </div>
