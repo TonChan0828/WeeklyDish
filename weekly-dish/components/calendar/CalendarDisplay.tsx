@@ -1,7 +1,8 @@
 // components/calendar/CalendarDisplay.tsx
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import RecipeDetailModal from "@/components/recipes/RecipeDetailModal";
 
 interface Recipe {
   id: string;
@@ -25,7 +26,11 @@ interface CalendarDisplayProps {
     index: number,
     newRecipeId: string
   ) => void;
-  onRecipeDelete?: (date: string, slot: "lunch" | "dinner", index: number) => void;
+  onRecipeDelete?: (
+    date: string,
+    slot: "lunch" | "dinner",
+    index: number
+  ) => void;
 }
 
 export default function CalendarDisplay({
@@ -44,24 +49,13 @@ export default function CalendarDisplay({
   });
 
   // 選択中レシピのstate
-  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
-  const [detail, setDetail] = useState<{
-    ingredients: any[];
-    steps: any[];
+  const [selectedRecipeInfo, setSelectedRecipeInfo] = useState<{
+    recipe: Recipe;
+    date: string;
+    slot: "lunch" | "dinner";
+    index: number;
   } | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (selectedRecipe) {
-      setLoading(true);
-      fetch(`/api/recipe-detail/${selectedRecipe.id}`)
-        .then((res) => res.json())
-        .then((data) => setDetail(data))
-        .finally(() => setLoading(false));
-    } else {
-      setDetail(null);
-    }
-  }, [selectedRecipe]);
+  // モーダル表示用の詳細データはRecipeDetailModal側で取得する
 
   return (
     <>
@@ -80,7 +74,14 @@ export default function CalendarDisplay({
               onRecipeChange={(index, newRecipeId) =>
                 onRecipeChange?.(date, "lunch", index, newRecipeId)
               }
-              onRecipeDelete={onRecipeDelete ? (index) => onRecipeDelete(date, "lunch", index) : undefined}
+              onRecipeClick={(recipe, i) =>
+                setSelectedRecipeInfo({ recipe, date, slot: "lunch", index: i })
+              }
+              onRecipeDelete={
+                onRecipeDelete
+                  ? (index) => onRecipeDelete(date, "lunch", index)
+                  : undefined
+              }
               className="text-orange-600"
             />
             <MealSection
@@ -92,56 +93,42 @@ export default function CalendarDisplay({
               onRecipeChange={(index, newRecipeId) =>
                 onRecipeChange?.(date, "dinner", index, newRecipeId)
               }
-              onRecipeDelete={onRecipeDelete ? (index) => onRecipeDelete(date, "dinner", index) : undefined}
+              onRecipeClick={(recipe, i) =>
+                setSelectedRecipeInfo({
+                  recipe,
+                  date,
+                  slot: "dinner",
+                  index: i,
+                })
+              }
+              onRecipeDelete={
+                onRecipeDelete
+                  ? (index) => onRecipeDelete(date, "dinner", index)
+                  : undefined
+              }
               className="text-green-600 mt-2"
             />
           </div>
         ))}
       </div>
       {/* モーダル表示 */}
-      {selectedRecipe && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded shadow-lg min-w-[300px] max-w-[90vw] relative">
-            <button
-              className="absolute top-2 right-4 text-2xl"
-              onClick={() => setSelectedRecipe(null)}
-            >
-              ×
-            </button>
-            <h2 className="text-xl font-bold mb-2">{selectedRecipe.title}</h2>
-            <p className="mb-1">
-              種類: {selectedRecipe.type === "main" ? "主菜" : "副菜"}
-            </p>
-            {/* ここから詳細 */}
-            {loading && <p>読み込み中...</p>}
-            {detail && (
-              <>
-                <h3 className="font-bold mt-4">材料</h3>
-                <ul className="list-disc ml-5">
-                  {detail.ingredients.map((ing: any) => (
-                    <li key={ing.id}>
-                      {ing.name} {ing.amount}
-                      {ing.unit} {ing.notes && `(${ing.notes})`}
-                    </li>
-                  ))}
-                </ul>
-                <h3 className="font-bold mt-4">手順</h3>
-                <ol className="list-decimal ml-5">
-                  {detail.steps.map((step: any) => (
-                    <li key={step.id}>
-                      {step.description}
-                      {step.tips && (
-                        <span className="text-xs text-gray-500">
-                          （{step.tips}）
-                        </span>
-                      )}
-                    </li>
-                  ))}
-                </ol>
-              </>
-            )}
-          </div>
-        </div>
+      {selectedRecipeInfo && (
+        <RecipeDetailModal
+          recipe={selectedRecipeInfo.recipe}
+          onClose={() => setSelectedRecipeInfo(null)}
+          onDelete={
+            onRecipeDelete
+              ? () => {
+                  onRecipeDelete(
+                    selectedRecipeInfo.date,
+                    selectedRecipeInfo.slot,
+                    selectedRecipeInfo.index
+                  );
+                  setSelectedRecipeInfo(null); // 削除後にモーダルを閉じる
+                }
+              : undefined
+          }
+        />
       )}
     </>
   );
@@ -155,7 +142,7 @@ interface MealSectionProps {
   mainRecipes: Recipe[];
   sideRecipes: Recipe[];
   onRecipeChange: (index: number, newRecipeId: string) => void;
-  onRecipeClick?: (recipe: Recipe) => void;
+  onRecipeClick?: (recipe: Recipe, index: number) => void;
   onRecipeDelete?: (index: number) => void;
   className?: string;
 }
@@ -179,7 +166,7 @@ function MealSection({
           <li
             key={`${title}-${i}`}
             className={`text-gray-700 ${!isEditable ? "cursor-pointer hover:underline" : ""}`}
-            onClick={() => !isEditable && onRecipeClick?.(recipe)}
+            onClick={() => !isEditable && onRecipeClick?.(recipe, i)}
           >
             {isEditable ? (
               <select
@@ -198,18 +185,6 @@ function MealSection({
             ) : (
               <span className="inline-flex items-center gap-2">
                 {recipe.title}
-                {onRecipeDelete && (
-                  <button
-                    type="button"
-                    className="ml-2 text-xs text-red-500 hover:underline"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onRecipeDelete(i);
-                    }}
-                  >
-                    削除
-                  </button>
-                )}
               </span>
             )}
           </li>
