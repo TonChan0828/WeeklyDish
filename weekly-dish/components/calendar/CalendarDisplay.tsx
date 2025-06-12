@@ -59,7 +59,7 @@ export default function CalendarDisplay({
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-7 gap-4 mt-8">
+      <div className="grid grid-cols-1 md:grid-cols-7 gap-4 mt-8 w-full">
         {sortedDates.map(([date, meals]) => (
           <div key={date} className="border p-4 rounded shadow bg-white">
             <h2 className="font-bold mb-2 text-lg">
