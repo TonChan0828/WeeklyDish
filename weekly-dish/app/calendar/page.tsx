@@ -231,7 +231,7 @@ export default function Calendar() {
   return (
     <div className="flex flex-col md:flex-row gap-8 bg-gradient-to-br from-orange-50 to-yellow-100 min-h-screen">
       <div className="flex-auto">
-        <div className="container mx-auto p-6 rounded-3xl shadow-2xl bg-white/90 mt-8">
+        <div className="mx-auto p-6 rounded-3xl shadow-2xl bg-white/90 mt-8 w-full max-w-none">
           <h1
             className="text-3xl font-extrabold mb-6 text-orange-600 flex items-center gap-2 drop-shadow-lg cursor-pointer hover:text-orange-500 transition"
             onClick={() => router.push("/calendar")}
@@ -400,8 +400,8 @@ export default function Calendar() {
       </div>
 
       {/* 買い物リストを中央寄せ＆カード風に改善 */}
-      <div className="w-full md:w-[600px] flex justify-center items-start mt-8 md:mt-16">
-        <div className="w-full max-w-md bg-white/90 rounded-2xl shadow-lg p-3">
+      <div className="w-full md:w-[700px] flex justify-center items-start mt-8 md:mt-16">
+        <div className="w-full bg-white/90 rounded-2xl shadow-lg p-3">
           <h2 className="text-xl font-bold mb-4 text-orange-700 flex items-center gap-2">
             <span className="inline-block bg-orange-100 rounded-full p-2">
               <svg width="24" height="24" fill="none" viewBox="0 0 24 24">

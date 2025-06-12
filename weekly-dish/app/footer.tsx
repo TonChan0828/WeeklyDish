@@ -4,8 +4,8 @@ import { FaGithub, FaXTwitter } from "react-icons/fa6";
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-800 text-gray-300 py-8">
-      <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-6">
+    <footer className="bg-gradient-to-r from-orange-500 via-pink-500 to-red-500 text-white py-8">
+      <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-6 text-center md:text-left">
         {/* サイトナビゲーション */}
         <div>
           <h4 className="text-lg font-semibold text-white mb-4">Quick Links</h4>
