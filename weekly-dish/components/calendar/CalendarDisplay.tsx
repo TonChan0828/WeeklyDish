@@ -26,7 +26,11 @@ interface CalendarDisplayProps {
     index: number,
     newRecipeId: string
   ) => void;
-  onRecipeDelete?: (date: string, slot: "lunch" | "dinner", index: number) => void;
+  onRecipeDelete?: (
+    date: string,
+    slot: "lunch" | "dinner",
+    index: number
+  ) => void;
 }
 
 export default function CalendarDisplay({
@@ -73,7 +77,11 @@ export default function CalendarDisplay({
               onRecipeClick={(recipe, i) =>
                 setSelectedRecipeInfo({ recipe, date, slot: "lunch", index: i })
               }
-              onRecipeDelete={onRecipeDelete ? (index) => onRecipeDelete(date, "lunch", index) : undefined}
+              onRecipeDelete={
+                onRecipeDelete
+                  ? (index) => onRecipeDelete(date, "lunch", index)
+                  : undefined
+              }
               className="text-orange-600"
             />
             <MealSection
@@ -86,9 +94,18 @@ export default function CalendarDisplay({
                 onRecipeChange?.(date, "dinner", index, newRecipeId)
               }
               onRecipeClick={(recipe, i) =>
-                setSelectedRecipeInfo({ recipe, date, slot: "dinner", index: i })
+                setSelectedRecipeInfo({
+                  recipe,
+                  date,
+                  slot: "dinner",
+                  index: i,
+                })
               }
-              onRecipeDelete={onRecipeDelete ? (index) => onRecipeDelete(date, "dinner", index) : undefined}
+              onRecipeDelete={
+                onRecipeDelete
+                  ? (index) => onRecipeDelete(date, "dinner", index)
+                  : undefined
+              }
               className="text-green-600 mt-2"
             />
           </div>
@@ -99,7 +116,18 @@ export default function CalendarDisplay({
         <RecipeDetailModal
           recipe={selectedRecipeInfo.recipe}
           onClose={() => setSelectedRecipeInfo(null)}
-          onDelete={onRecipeDelete ? () => onRecipeDelete(selectedRecipeInfo.date, selectedRecipeInfo.slot, selectedRecipeInfo.index) : undefined}
+          onDelete={
+            onRecipeDelete
+              ? () => {
+                  onRecipeDelete(
+                    selectedRecipeInfo.date,
+                    selectedRecipeInfo.slot,
+                    selectedRecipeInfo.index
+                  );
+                  setSelectedRecipeInfo(null); // 削除後にモーダルを閉じる
+                }
+              : undefined
+          }
         />
       )}
     </>
@@ -157,18 +185,6 @@ function MealSection({
             ) : (
               <span className="inline-flex items-center gap-2">
                 {recipe.title}
-                {onRecipeDelete && (
-                  <button
-                    type="button"
-                    className="ml-2 text-xs text-red-500 hover:underline"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onRecipeDelete(i);
-                    }}
-                  >
-                    削除
-                  </button>
-                )}
               </span>
             )}
           </li>
