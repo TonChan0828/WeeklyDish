@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 interface Ingredient {
   id: string;
   name: string;
-  quantity: string;
+  amount_text: string | null;
 }
 interface Step {
   id: string;
@@ -94,7 +94,7 @@ export default function RecipeDetailModal({
                 >
                   <span className="inline-block w-2 h-2 rounded-full bg-blue-400 mr-2"></span>
                   <span className="font-medium">{ing.name}</span>
-                  <span className="text-sm text-gray-500">{ing.quantity}</span>
+                  <span className="text-sm text-gray-500">{ing.amount_text}</span>
                 </li>
               ))}
             </ul>

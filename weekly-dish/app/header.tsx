@@ -79,6 +79,12 @@ export default function Header() {
             >
               <span>レシピ一覧</span>
             </Link>
+            <Link
+              href="/recipes/new"
+              className="flex items-center space-x-1 hover:text-white transition"
+            >
+              <span>レシピ登録</span>
+            </Link>
             {isSignedIn && (
               <Link href="/sign-out" className="text-white ml-4">
                 Sign Out
@@ -121,6 +127,13 @@ export default function Header() {
             onClick={() => setMenuOpen(false)}
           >
             <span>レシピ一覧</span>
+          </Link>
+          <Link
+            href="/recipes/new"
+            className="flex items-center space-x-2"
+            onClick={() => setMenuOpen(false)}
+          >
+            <span>レシピ登録</span>
           </Link>
           {isSignedIn && (
             <Link
