@@ -2,7 +2,7 @@
 "use client";
 import React from "react";
 import { useState, useMemo, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import CalendarDisplay from "@/components/calendar/CalendarDisplay";
 import ShoppingList from "@/components/shopping/ShoppingList";
 import { format, addDays, parseISO } from "date-fns";
@@ -187,6 +187,7 @@ export default function Calendar() {
       const updatedData = await updatedRes.json();
       setCalendar4weeks(updatedData.calendar);
       setCalendar(null); // 生成された献立をクリア
+      redirect("/calendar"); // カレンダー画面にリダイレクト
     } catch (error) {
       console.error("登録エラー:", error);
       alert("献立の登録に失敗しました");
