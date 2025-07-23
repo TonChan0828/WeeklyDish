@@ -109,4 +109,4 @@ MIT
 
 - [TonChan0828](https://github.com/TonChan0828)
 
-AIによる作成
+
